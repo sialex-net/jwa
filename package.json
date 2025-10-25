@@ -1,0 +1,8 @@
+{
+	"name": "react-router-7-cloudflare-hono",
+	"packageManager": "pnpm@10.16.0",
+	"private": true,
+	"scripts": {},
+	"type": "module",
+	"version": "1.0.0"
+}
