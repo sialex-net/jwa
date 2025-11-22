@@ -26,8 +26,15 @@
 	"scripts": {
 		"biome:check": "biome check --write --verbose",
 		"biome:ci": "biome ci --verbose",
+		"build": "react-router build",
+		"cf:deploy": "react-router build && wrangler deploy",
+		"cf:secrets": "wrangler secret bulk ./.dev.vars.production",
+		"cf:typegen": "wrangler types",
 		"clean": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache . && biome check --write --verbose",
-		"lint:eslint": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache ."
+		"dev": "react-router dev",
+		"lint:eslint": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache .",
+		"preview": "react-router build && vite preview",
+		"typecheck": "wrangler types && react-router typegen && tsc -b"
 	},
 	"type": "module",
 	"version": "1.0.0"
