@@ -12,7 +12,8 @@
 	"private": true,
 	"scripts": {
 		"biome:check": "biome check --write --verbose",
-		"biome:ci": "biome ci --verbose"
+		"biome:ci": "biome ci --verbose",
+		"lint:eslint": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache ."
 	},
 	"type": "module",
 	"version": "1.0.0"
