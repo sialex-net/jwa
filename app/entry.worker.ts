@@ -1,13 +1,18 @@
 import { createRequestHandler } from 'react-router';
-import type { PlatformProxy } from 'wrangler';
+
+function getLoadContext(request: Request, env: Env, ctx: ExecutionContext) {
+	return {
+		cloudflare: {
+			caches: globalThis.caches ? caches : void 0,
+			ctx,
+			env,
+			req: request,
+		},
+	};
+}
 
 declare module 'react-router' {
-	export interface AppLoadContext {
-		cloudflare: Omit<PlatformProxy<Env>, 'caches' | 'cf' | 'dispose'> & {
-			caches: CacheStorage | PlatformProxy<Env>['caches'] | undefined;
-			req: Request;
-		};
-	}
+	interface AppLoadContext extends ReturnType<typeof getLoadContext> {}
 }
 
 const requestHandler = createRequestHandler(
@@ -17,13 +22,6 @@ const requestHandler = createRequestHandler(
 
 export default {
 	async fetch(request, env, ctx) {
-		return await requestHandler(request, {
-			cloudflare: {
-				caches: globalThis.caches ? caches : void 0,
-				ctx,
-				env,
-				req: request,
-			},
-		});
+		return await requestHandler(request, getLoadContext(request, env, ctx));
 	},
 } satisfies ExportedHandler<Env>;
