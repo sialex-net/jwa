@@ -1,0 +1,19 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./build/client/"
+	},
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "./app/entry.worker.ts",
+	"name": "react-router-7-cloudflare-hono",
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		"APP_ENV": "production"
+	},
+	"workers_dev": true
+	// TODO: env: {}
+}
