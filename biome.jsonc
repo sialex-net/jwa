@@ -1,0 +1,71 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+				"useSortedAttributes": "on",
+				"useSortedKeys": "on",
+				"useSortedProperties": "on"
+			}
+		},
+		"enabled": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": ["**"]
+	},
+	"formatter": {
+		"attributePosition": "multiline",
+		"enabled": true,
+		"formatWithErrors": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 80
+	},
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "always",
+			"bracketSameLine": false,
+			"bracketSpacing": true,
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"quoteStyle": "single",
+			"semicolons": "always",
+			"trailingCommas": "all"
+		}
+	},
+	"json": {
+		"formatter": {
+			"trailingCommas": "none"
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"correctness": {
+				"noUnusedVariables": "error"
+			},
+			"nursery": {
+				// tailwindcss
+				"useSortedClasses": {
+					"fix": "safe",
+					"level": "error",
+					"options": {
+						"functions": ["clsx", "cva", "tw"]
+					}
+				}
+			},
+			"recommended": true,
+			"style": {
+				"useConst": "off"
+			}
+		}
+	},
+	"vcs": {
+		"clientKind": "git",
+		"enabled": true,
+		"useIgnoreFile": true
+	}
+}
