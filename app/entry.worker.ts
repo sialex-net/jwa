@@ -8,6 +8,10 @@ const requestHandler = createRequestHandler(
 
 export default {
 	async fetch(request, env, ctx) {
-		return await requestHandler(request, getLoadContext(request, env, ctx));
+		let loadContext = getLoadContext(request, env, ctx);
+		return await requestHandler(
+			request,
+			loadContext instanceof Promise ? await loadContext : loadContext,
+		);
 	},
 } satisfies ExportedHandler<Env>;

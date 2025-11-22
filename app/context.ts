@@ -1,4 +1,4 @@
-export function getLoadContext(
+export async function getLoadContext(
 	request: Request,
 	env: Env,
 	ctx: ExecutionContext,
@@ -14,5 +14,5 @@ export function getLoadContext(
 }
 
 declare module 'react-router' {
-	interface AppLoadContext extends ReturnType<typeof getLoadContext> {}
+	interface AppLoadContext extends Awaited<ReturnType<typeof getLoadContext>> {}
 }
