@@ -34,6 +34,7 @@
 		"clean": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache . && biome check --write --verbose",
 		"dev": "react-router dev",
 		"lint:eslint": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache .",
+		"lint:knip": "knip",
 		"preview": "react-router build && vite preview",
 		"typecheck": "wrangler types && react-router typegen && tsc -b"
 	},
