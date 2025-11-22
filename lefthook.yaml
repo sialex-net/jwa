@@ -1,0 +1,5 @@
+pre-commit:
+  jobs:
+    - name: clean
+      run: bun biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
