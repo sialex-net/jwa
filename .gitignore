@@ -1,0 +1,13 @@
+*.tsbuildinfo
+.DS_Store
+.dev.vars
+.dev.vars.production
+.env
+.envrc
+.react-router/
+.wrangler/
+build/
+node_modules/
+pnpm-debug.log*
+worker-configuration.d.ts
+worktrees/
