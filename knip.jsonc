@@ -1,0 +1,6 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
+	"entry": ["app/entry.worker.ts"],
+	"ignoreFiles": ["worktrees/**"],
+	"project": ["**/*.{mjs,ts,tsx}"]
+}
