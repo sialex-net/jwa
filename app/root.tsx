@@ -6,6 +6,7 @@ import {
 	Scripts,
 	ScrollRestoration,
 } from 'react-router';
+/** @knipIgnoreUnresolved */
 import type { Route } from './+types/root';
 
 export function Layout({ children }: { children: React.ReactNode }) {
