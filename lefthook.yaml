@@ -11,3 +11,5 @@ pre-commit:
             stage_fixed: true
     - name: typecheck
       run: bun tsc -b
+    - name: knip
+      run: bun knip
