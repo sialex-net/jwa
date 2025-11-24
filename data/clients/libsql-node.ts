@@ -4,11 +4,11 @@ import {
 	LOCAL_TURSO_URL,
 	TURSO_AUTH_TOKEN,
 	TURSO_URL,
-} from '../config/process-env';
+} from '../../config/process-env';
 
 let client: Client;
 
-export function getClient() {
+export function getClientNode() {
 	if (!client || client.closed) {
 		client = createClient({
 			authToken: APP_ENV === 'development' ? undefined : TURSO_AUTH_TOKEN,

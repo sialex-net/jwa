@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import { faker } from '@faker-js/faker';
 import { drizzle } from 'drizzle-orm/libsql';
 import { UniqueEnforcer } from 'enforce-unique';
+import { getClientNode } from './clients/libsql-node';
 import * as schema from './drizzle/schema';
-import { getClient } from './libsql-client';
 
-let client = getClient();
+let client = getClientNode();
 let db = drizzle(client, { schema });
 
 let uniqueUsernameEnforcer = new UniqueEnforcer();
