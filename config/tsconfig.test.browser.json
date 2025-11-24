@@ -8,6 +8,8 @@
 		"../.react-router/types/**/*",
 		"../app/**/*.ts",
 		"../app/**/*.tsx",
+		"../config/**/*.ts",
+		"../data/**/*.ts",
 		"../react-router.config.ts",
 		"../tests/setup.browser.tsx",
 		"../worker-configuration.d.ts"
