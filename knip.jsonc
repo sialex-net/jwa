@@ -5,6 +5,8 @@
 		"app/entry.worker.ts",
 		"config/drizzle.config.ts"
 	],
+	// install turso cli with homebrew
+	"ignoreBinaries": ["turso"],
 	"ignoreDependencies": ["cloudflare", "tailwindcss"],
 	"ignoreFiles": ["worktrees/**"],
 	"project": ["**/*.{mjs,ts,tsx}"],
