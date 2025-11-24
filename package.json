@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"hono": "^4.10.5",
 		"isbot": "^5.1.32",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
