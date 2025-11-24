@@ -14,12 +14,10 @@ export function getContext<T>(
 
 async function getAppContext(c: Context<AppEnv>) {
 	return {
-		cloudflare: {
-			caches: globalThis.caches ? caches : void 0,
-			cf: c.req.raw.cf,
-			ctx: c.executionCtx,
-			env: c.env,
-		},
+		caches: globalThis.caches ? caches : void 0,
+		cf: c.req.raw.cf,
+		ctx: c.executionCtx,
+		env: c.env,
 	};
 }
 
