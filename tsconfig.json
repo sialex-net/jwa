@@ -3,6 +3,7 @@
 	"files": [],
 	"references": [
 		{ "path": "./config/tsconfig.cloudflare.json" },
-		{ "path": "./config/tsconfig.node.json" }
+		{ "path": "./config/tsconfig.node.json" },
+		{ "path": "./config/tsconfig.test.browser.json" }
 	]
 }
