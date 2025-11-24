@@ -8,7 +8,10 @@ export default [
 	...prefix('users', [
 		...prefix(':username', [
 			index('./routes/username.tsx'),
-			...prefix('posts', [index('./routes/posts/home.tsx')]),
+			...prefix('posts', [
+				index('./routes/posts/home.tsx'),
+				route(':postId', './routes/posts/post-id.tsx'),
+			]),
 		]),
 	]),
 ] satisfies RouteConfig;
