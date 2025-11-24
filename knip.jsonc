@@ -1,6 +1,10 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
-	"entry": ["app/context.ts", "app/entry.worker.ts"],
+	"entry": [
+		"app/context.ts",
+		"app/entry.worker.ts",
+		"config/drizzle.config.ts"
+	],
 	"ignoreDependencies": ["cloudflare", "tailwindcss"],
 	"ignoreFiles": ["worktrees/**"],
 	"project": ["**/*.{mjs,ts,tsx}"],
