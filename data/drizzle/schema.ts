@@ -1,18 +1,6 @@
-import { sql } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import * as t from 'drizzle-orm/sqlite-core';
-import { id } from './helpers';
-
-let timestamps = {
-	createdAt: t
-		.integer('created_at', { mode: 'timestamp_ms' })
-		.notNull()
-		.default(sql`(unixepoch() * 1000)`),
-	updatedAt: t
-		.integer('updated_at', { mode: 'timestamp_ms' })
-		.notNull()
-		.default(sql`(unixepoch() * 1000)`),
-};
+import { id, timestamps } from './helpers';
 
 let users = t.sqliteTable('users', {
 	email: t.text('email').notNull().unique(),
