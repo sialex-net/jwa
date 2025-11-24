@@ -6,6 +6,9 @@ export default [
 	route('login', './routes/login.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
 	...prefix('users', [
-		...prefix(':username', [index('./routes/username.tsx')]),
+		...prefix(':username', [
+			index('./routes/username.tsx'),
+			...prefix('posts', [index('./routes/posts/home.tsx')]),
+		]),
 	]),
 ] satisfies RouteConfig;
