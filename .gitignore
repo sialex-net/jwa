@@ -11,3 +11,8 @@ node_modules/
 pnpm-debug.log*
 worker-configuration.d.ts
 worktrees/
+
+# testing
+__screenshots__/
+test-results/
+playwright-report/
