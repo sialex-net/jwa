@@ -1,0 +1,283 @@
+{
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	},
+	"dialect": "sqlite",
+	"enums": {},
+	"id": "da759742-0efb-411c-8307-a9738639f671",
+	"internal": {
+		"indexes": {}
+	},
+	"prevId": "00000000-0000-0000-0000-000000000000",
+	"tables": {
+		"post_images": {
+			"checkConstraints": {},
+			"columns": {
+				"alt_text": {
+					"autoincrement": false,
+					"name": "alt_text",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"blob": {
+					"autoincrement": false,
+					"name": "blob",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "blob"
+				},
+				"content_type": {
+					"autoincrement": false,
+					"name": "content_type",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"created_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "created_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"id": {
+					"autoincrement": false,
+					"name": "id",
+					"notNull": true,
+					"primaryKey": true,
+					"type": "text"
+				},
+				"post_id": {
+					"autoincrement": false,
+					"name": "post_id",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"updated_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "updated_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"foreignKeys": {
+				"post_images_post_id_posts_id_fk": {
+					"columnsFrom": ["post_id"],
+					"columnsTo": ["id"],
+					"name": "post_images_post_id_posts_id_fk",
+					"onDelete": "cascade",
+					"onUpdate": "no action",
+					"tableFrom": "post_images",
+					"tableTo": "posts"
+				}
+			},
+			"indexes": {},
+			"name": "post_images",
+			"uniqueConstraints": {}
+		},
+		"posts": {
+			"checkConstraints": {},
+			"columns": {
+				"content": {
+					"autoincrement": false,
+					"name": "content",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"created_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "created_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"id": {
+					"autoincrement": false,
+					"name": "id",
+					"notNull": true,
+					"primaryKey": true,
+					"type": "text"
+				},
+				"title": {
+					"autoincrement": false,
+					"name": "title",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"updated_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "updated_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"user_id": {
+					"autoincrement": false,
+					"name": "user_id",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "text"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"foreignKeys": {
+				"posts_user_id_users_id_fk": {
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"name": "posts_user_id_users_id_fk",
+					"onDelete": "cascade",
+					"onUpdate": "no action",
+					"tableFrom": "posts",
+					"tableTo": "users"
+				}
+			},
+			"indexes": {
+				"posts_title_unique": {
+					"columns": ["title"],
+					"isUnique": true,
+					"name": "posts_title_unique"
+				}
+			},
+			"name": "posts",
+			"uniqueConstraints": {}
+		},
+		"user_images": {
+			"checkConstraints": {},
+			"columns": {
+				"alt_text": {
+					"autoincrement": false,
+					"name": "alt_text",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"blob": {
+					"autoincrement": false,
+					"name": "blob",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "blob"
+				},
+				"content_type": {
+					"autoincrement": false,
+					"name": "content_type",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"created_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "created_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"id": {
+					"autoincrement": false,
+					"name": "id",
+					"notNull": true,
+					"primaryKey": true,
+					"type": "text"
+				},
+				"updated_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "updated_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"user_id": {
+					"autoincrement": false,
+					"name": "user_id",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"foreignKeys": {
+				"user_images_user_id_users_id_fk": {
+					"columnsFrom": ["user_id"],
+					"columnsTo": ["id"],
+					"name": "user_images_user_id_users_id_fk",
+					"onDelete": "cascade",
+					"onUpdate": "no action",
+					"tableFrom": "user_images",
+					"tableTo": "users"
+				}
+			},
+			"indexes": {},
+			"name": "user_images",
+			"uniqueConstraints": {}
+		},
+		"users": {
+			"checkConstraints": {},
+			"columns": {
+				"created_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "created_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"email": {
+					"autoincrement": false,
+					"name": "email",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "text"
+				},
+				"id": {
+					"autoincrement": false,
+					"name": "id",
+					"notNull": true,
+					"primaryKey": true,
+					"type": "text"
+				},
+				"updated_at": {
+					"autoincrement": false,
+					"default": "(unixepoch() * 1000)",
+					"name": "updated_at",
+					"notNull": true,
+					"primaryKey": false,
+					"type": "integer"
+				},
+				"username": {
+					"autoincrement": false,
+					"name": "username",
+					"notNull": false,
+					"primaryKey": false,
+					"type": "text"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"foreignKeys": {},
+			"indexes": {
+				"users_email_unique": {
+					"columns": ["email"],
+					"isUnique": true,
+					"name": "users_email_unique"
+				}
+			},
+			"name": "users",
+			"uniqueConstraints": {}
+		}
+	},
+	"version": "6",
+	"views": {}
+}
