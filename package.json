@@ -66,6 +66,7 @@
 		"local-db:dev": "turso dev --db-file ./data/local-db/local.sqlite3",
 		"local-db:migrate": "APP_ENV=development bun ./data/drizzle/migrate.ts",
 		"local-db:push": "drizzle-kit push --config=./config/drizzle.config.ts",
+		"local-db:seed": "bun ./data/seed.ts",
 		"local-db:studio": "APP_ENV=development drizzle-kit studio --config=./config/drizzle.config.ts",
 		"preview": "react-router build && vite preview",
 		"remote-db:migrate": "APP_ENV=production bun ./data/drizzle/migrate.ts",
