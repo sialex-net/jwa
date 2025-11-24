@@ -1,7 +1,7 @@
-import { createId } from '@paralleldrive/cuid2';
 import { sql } from 'drizzle-orm';
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import * as t from 'drizzle-orm/sqlite-core';
+import { nanoid } from 'nanoid';
 
 let timestamps = {
 	createdAt: t
@@ -19,7 +19,7 @@ let users = t.sqliteTable('users', {
 	id: t
 		.text('id')
 		.primaryKey()
-		.$defaultFn(() => createId()),
+		.$defaultFn(() => nanoid()),
 	username: t.text('username'),
 	...timestamps,
 });
@@ -29,7 +29,7 @@ let posts = t.sqliteTable('posts', {
 	id: t
 		.text('id')
 		.primaryKey()
-		.$defaultFn(() => createId()),
+		.$defaultFn(() => nanoid()),
 	title: t.text('title').notNull().unique(),
 	userId: t
 		.text('user_id')
@@ -45,7 +45,7 @@ let userImages = t.sqliteTable('user_images', {
 	id: t
 		.text('id')
 		.primaryKey()
-		.$defaultFn(() => createId()),
+		.$defaultFn(() => nanoid()),
 	userId: t
 		.text('user_id')
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
@@ -59,7 +59,7 @@ let postImages = t.sqliteTable('post_images', {
 	id: t
 		.text('id')
 		.primaryKey()
-		.$defaultFn(() => createId()),
+		.$defaultFn(() => nanoid()),
 	postId: t
 		.text('post_id')
 		.references((): AnySQLiteColumn => posts.id, { onDelete: 'cascade' }),
