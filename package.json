@@ -22,7 +22,6 @@
 		"@cloudflare/vite-plugin": "^1.14.2",
 		"@cloudflare/vitest-pool-workers": "^0.10.7",
 		"@faker-js/faker": "^10.1.0",
-		"@paralleldrive/cuid2": "^3.0.4",
 		"@playwright/test": "^1.56.1",
 		"@react-router/dev": "^7.9.6",
 		"@tailwindcss/vite": "^4.1.17",
