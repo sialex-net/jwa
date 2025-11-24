@@ -11,6 +11,7 @@ export default [
 			...prefix('posts', [
 				index('./routes/posts/home.tsx'),
 				route(':postId', './routes/posts/post-id.tsx'),
+				route(':postId/edit', './routes/posts/edit-post.tsx'),
 			]),
 		]),
 	]),
