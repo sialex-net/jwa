@@ -1,6 +1,7 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
 	"entry": ["app/entry.worker.ts"],
+	"ignoreDependencies": ["cloudflare"],
 	"ignoreFiles": ["worktrees/**"],
 	"project": ["**/*.{mjs,ts,tsx}"],
 	// knipIgnoreUnresolved: knip doesn't recognize compilerOptions.rootDirs
