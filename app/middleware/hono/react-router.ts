@@ -1,16 +1,16 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import type {
-	AppLoadContext,
 	CreateRequestHandlerFunction,
+	RouterContextProvider,
 } from 'react-router';
 import { createRequestHandler } from 'react-router';
 
 interface ReactRouterMiddlewareOptions {
 	build: Parameters<CreateRequestHandlerFunction>[0];
 	loadContext?:
-		| ((ctx: Context) => AppLoadContext | Promise<AppLoadContext>)
-		| AppLoadContext;
+		| ((ctx: Context) => Promise<RouterContextProvider> | RouterContextProvider)
+		| RouterContextProvider;
 	mode?: Parameters<CreateRequestHandlerFunction>[1];
 }
 
