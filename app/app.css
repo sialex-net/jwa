@@ -3,6 +3,10 @@
 @source ".";
 
 @theme {
+	--font-mono:
+		"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+
 	--breakpoint-xs: 30rem;
 
 	/* escape * to avoid biome parse error */

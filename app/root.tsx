@@ -9,8 +9,13 @@ import {
 /** @knipIgnoreUnresolved */
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
+import fontStylesheetUrl from './fonts.css?url';
 
-const linksArr = [{ href: tailwindcssStylesheetUrl, rel: 'stylesheet' }];
+const linksArr = [
+	{ as: 'style', href: fontStylesheetUrl, rel: 'preload' },
+	{ href: fontStylesheetUrl, rel: 'stylesheet' },
+	{ href: tailwindcssStylesheetUrl, rel: 'stylesheet' },
+];
 
 export const links: Route.LinksFunction = () =>
 	// avoid HMR issue in dev mode
@@ -36,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 				<Meta />
 				<Links />
 			</head>
-			<body className="bg-background text-foreground">
+			<body className="bg-background font-mono text-foreground">
 				{children}
 				<ScrollRestoration />
 				<Scripts />
