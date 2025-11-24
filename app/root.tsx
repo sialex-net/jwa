@@ -1,4 +1,5 @@
 import {
+	data,
 	isRouteErrorResponse,
 	Links,
 	Meta,
@@ -10,6 +11,9 @@ import {
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
 import fontStylesheetUrl from './fonts.css?url';
+import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
+import { ClientHintCheck, getHints } from './utils/client-hints';
+import { getTheme } from './utils/theme.server';
 
 const linksArr = [
 	{ as: 'style', href: fontStylesheetUrl, rel: 'preload' },
@@ -26,13 +30,26 @@ export const links: Route.LinksFunction = () =>
 				...linksArr,
 			];
 
+export async function loader({ request }: Route.LoaderArgs) {
+	return data({
+		requestInfo: {
+			hints: getHints(request),
+			userPrefs: {
+				theme: getTheme(request),
+			},
+		},
+	});
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+	let theme = useOptionalTheme() || 'light';
 	return (
 		<html
-			data-theme="dark"
+			data-theme={theme}
 			lang="en"
 		>
 			<head>
+				<ClientHintCheck />
 				<meta charSet="utf-8" />
 				<meta
 					content="width=device-width, initial-scale=1"
@@ -50,8 +67,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 	);
 }
 
-export default function App() {
-	return <Outlet />;
+export default function App({ loaderData }: Route.ComponentProps) {
+	return (
+		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between">
+			<Outlet />
+			<footer className="flex justify-end gap-x-8 pr-8 pb-8 font-mono">
+				<ThemeSwitch userPreference={loaderData.requestInfo.userPrefs.theme} />
+			</footer>
+		</div>
+	);
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
