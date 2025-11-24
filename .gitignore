@@ -6,6 +6,7 @@
 .envrc
 .react-router/
 .wrangler/
+app/components/ui/icons/
 build/
 node_modules/
 pnpm-debug.log*
