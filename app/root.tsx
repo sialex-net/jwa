@@ -7,6 +7,8 @@ import {
 	Scripts,
 	ScrollRestoration,
 } from 'react-router';
+import { contextStorageMiddleware } from '@/app/middleware/context-storage';
+import { libsqlMiddleware } from '@/app/middleware/libsql';
 /** @knipIgnoreUnresolved */
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
@@ -14,6 +16,8 @@ import fontStylesheetUrl from './fonts.css?url';
 import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
 import { ClientHintCheck, getHints } from './utils/client-hints';
 import { getTheme } from './utils/theme.server';
+
+export const middleware = [contextStorageMiddleware, libsqlMiddleware];
 
 const linksArr = [
 	{ as: 'style', href: fontStylesheetUrl, rel: 'preload' },
