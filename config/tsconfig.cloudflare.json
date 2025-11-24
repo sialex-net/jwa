@@ -17,6 +17,8 @@
 		"../.react-router/types/**/*",
 		"../app/**/*.ts",
 		"../app/**/*.tsx",
+		"../config/**/*.ts",
+		"../data/**/*.ts",
 		"../react-router.config.ts",
 		"../worker-configuration.d.ts"
 	]
