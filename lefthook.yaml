@@ -13,3 +13,5 @@ pre-commit:
       run: bun tsc -b
     - name: knip
       run: bun knip
+    - name: test
+      run: pnpm test:ci
