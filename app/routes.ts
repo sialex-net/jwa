@@ -5,7 +5,8 @@ export default [
 	index('./routes/home.tsx'),
 	route('login', './routes/login.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
-	...prefix('users', [
+	route('users', './routes/users/users.tsx', [
+		index('./routes/users/home.tsx'),
 		...prefix(':username', [
 			index('./routes/username.tsx'),
 			...prefix('posts', [
