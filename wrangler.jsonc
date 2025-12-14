@@ -11,9 +11,6 @@
 	"observability": {
 		"enabled": true
 	},
-	"vars": {
-		"APP_ENV": "production"
-	},
 	"workers_dev": true
 	// TODO: env: {}
 }
