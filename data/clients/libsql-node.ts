@@ -1,18 +1,13 @@
 import { type Client, createClient } from '@libsql/client';
-import {
-	APP_ENV,
-	LOCAL_TURSO_URL,
-	TURSO_AUTH_TOKEN,
-	TURSO_URL,
-} from '../../config/process-env';
+import { TURSO_AUTH_TOKEN, TURSO_URL } from '../../config/process-env';
 
 let client: Client;
 
 export function getClientNode() {
 	if (!client || client.closed) {
 		client = createClient({
-			authToken: APP_ENV === 'development' ? undefined : TURSO_AUTH_TOKEN,
-			url: APP_ENV === 'development' ? LOCAL_TURSO_URL : TURSO_URL,
+			authToken: TURSO_AUTH_TOKEN === '' ? undefined : TURSO_AUTH_TOKEN,
+			url: TURSO_URL,
 		});
 	}
 

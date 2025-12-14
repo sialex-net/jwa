@@ -9,5 +9,4 @@ const processEnv = z
 	})
 	.parse(process.env);
 
-export const { APP_ENV, LOCAL_TURSO_URL, TURSO_AUTH_TOKEN, TURSO_URL } =
-	processEnv;
+export const { APP_ENV, TURSO_AUTH_TOKEN, TURSO_URL } = processEnv;
