@@ -1,6 +1,7 @@
 *.tsbuildinfo
 .DS_Store
 .dev.vars
+.dev.vars.preview
 .dev.vars.production
 .env
 .envrc
