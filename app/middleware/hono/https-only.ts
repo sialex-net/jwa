@@ -4,12 +4,14 @@ export function httpsOnly() {
 	return createMiddleware(async (c, next) => {
 		let url = new URL(c.req.url);
 
-		if (url.protocol !== 'http:') {
+		if (url.hostname === 'localhost') {
 			await next();
+		} else if (url.protocol !== 'http:') {
+			await next();
+		} else {
+			url.protocol = 'https:';
+
+			c.res = c.redirect(url.toString());
 		}
-
-		url.protocol = 'https:';
-
-		c.res = c.redirect(url.toString());
 	});
 }
