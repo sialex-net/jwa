@@ -21,7 +21,7 @@ class HonoRequestHandler extends WorkerEntrypoint<Env> {
 			this.app.use(logger());
 		}
 
-		if (env.APP_ENV === 'production') {
+		if (env.APP_ENV === 'preview' || env.APP_ENV === 'production') {
 			this.app.use(httpsOnly());
 		}
 
