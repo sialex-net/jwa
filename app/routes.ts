@@ -16,4 +16,5 @@ export default [
 			]),
 		]),
 	]),
+	route('healthcheck', './routes/healthcheck.tsx'),
 ] satisfies RouteConfig;
