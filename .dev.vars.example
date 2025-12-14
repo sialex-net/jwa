@@ -1,0 +1,8 @@
+# APP_ENV=
+
+# # for easy deployments to correct account through wrangler cli
+# CLOUDFLARE_ACCOUNT_ID=
+# CLOUDFLARE_API_TOKEN=
+
+# TURSO_AUTH_TOKEN=
+# TURSO_URL=
