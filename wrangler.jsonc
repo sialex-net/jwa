@@ -6,11 +6,13 @@
 	},
 	"compatibility_date": "2025-10-08",
 	"compatibility_flags": ["nodejs_compat"],
+	"env": {
+		"production": {}
+	},
 	"main": "./app/entry.worker.ts",
 	"name": "react-router-7-cloudflare-hono",
 	"observability": {
 		"enabled": true
 	},
 	"workers_dev": true
-	// TODO: env: {}
 }
