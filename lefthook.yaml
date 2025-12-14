@@ -1,4 +1,15 @@
 pre-commit:
+  jobs:
+    - name: clean
+      group:
+        piped: true
+        jobs:
+          - run: bun eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache {staged_files}
+            stage_fixed: true
+          - run: bun biome check --write --no-errors-on-unmatched {staged_files}
+            stage_fixed: true
+
+pre-push:
   parallel: true
   jobs:
     - name: clean
