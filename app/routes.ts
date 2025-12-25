@@ -9,7 +9,7 @@ export default [
 		index('./routes/users/home.tsx'),
 		...prefix(':username', [
 			index('./routes/users/username.tsx'),
-			...prefix('posts', [
+			route('posts', './routes/posts/posts.tsx', [
 				index('./routes/posts/home.tsx'),
 				route(':postId', './routes/posts/post-id.tsx'),
 				route(':postId/edit', './routes/posts/edit-post.tsx'),
