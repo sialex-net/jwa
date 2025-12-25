@@ -33,7 +33,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<h1>Users</h1>
 			<ul>
 				{loaderData.data.query.map((user) => (
-					<li key={user.id}>{user.username}</li>
+					<li key={user.id}>{user.username ?? user.email}</li>
 				))}
 			</ul>
 			{loaderData.data.hostname === 'localhost' && (
