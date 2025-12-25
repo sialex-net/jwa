@@ -63,6 +63,7 @@
 		"cf:typegen": "wrangler types",
 		"clean": "DEBUG=eslint:eslint,eslint:eslint-helpers eslint --fix --cache --cache-location ./node_modules/.tmp/eslintcache . && biome check --write --verbose",
 		"dev": "react-router dev",
+		"dev:preview": "CLOUDFLARE_ENV=preview react-router dev",
 		"drizzle-kit:generate": "drizzle-kit generate --config=./config/drizzle.config.ts",
 		"drizzle-kit:local:push": "bun --env-file=.dev.vars drizzle-kit push --config=./config/drizzle.config.ts",
 		"drizzle-kit:local:studio": "bun --env-file=.dev.vars drizzle-kit studio --config=./config/drizzle.config.ts",
