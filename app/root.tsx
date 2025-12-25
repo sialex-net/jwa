@@ -73,7 +73,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App({ loaderData }: Route.ComponentProps) {
 	return (
-		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between">
+		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between md:max-w-screen-xl">
 			<nav className="py-8">
 				<ol className="flex justify-center gap-x-8">
 					<li>
