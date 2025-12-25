@@ -1,4 +1,5 @@
 import { drizzle } from 'drizzle-orm/libsql';
+import { Link } from 'react-router';
 import { appContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
 import * as schema from '@/data/drizzle/schema';
@@ -33,7 +34,11 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<h1>Users</h1>
 			<ul>
 				{loaderData.data.query.map((user) => (
-					<li key={user.id}>{user.username ?? user.email}</li>
+					<li key={user.id}>
+						<Link to={`/users/${user.username}`}>
+							{user.username ?? user.email}
+						</Link>
+					</li>
 				))}
 			</ul>
 			{loaderData.data.hostname === 'localhost' && (
