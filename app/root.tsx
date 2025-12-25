@@ -1,5 +1,6 @@
 import {
 	data,
+	Link,
 	Links,
 	Meta,
 	Outlet,
@@ -74,6 +75,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between">
+			<nav className="py-8">
+				<ol className="flex justify-center gap-x-8">
+					<li>
+						<Link
+							className="text-lg"
+							to="/"
+						>
+							Home
+						</Link>
+					</li>
+					<li>
+						<Link
+							className="text-lg"
+							to="/users"
+						>
+							Users
+						</Link>
+					</li>
+				</ol>
+			</nav>
 			<Outlet />
 			<footer className="flex justify-end gap-x-8 pr-8 pb-8 font-mono">
 				<ThemeSwitch userPreference={loaderData.requestInfo.userPrefs.theme} />
