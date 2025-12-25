@@ -42,9 +42,14 @@ async function img({
 	altText?: string;
 	filepath: string;
 }) {
+	let nodeBuffer = await fs.promises.readFile(filepath);
+	let arrayBuffer = nodeBuffer.buffer.slice(
+		nodeBuffer.byteOffset,
+		nodeBuffer.byteOffset + nodeBuffer.byteLength,
+	);
 	return {
 		altText,
-		blob: await fs.promises.readFile(filepath),
+		blob: arrayBuffer,
 		contentType: filepath.endsWith('.jpeg')
 			? 'image/jpeg'
 			: filepath.endsWith('.webp')
