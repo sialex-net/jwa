@@ -8,7 +8,6 @@ import { RadioGroup } from '../components/ui/radio-group';
 import { useHints, useOptionalHints } from '../utils/client-hints';
 import { useOptionalRequestInfo, useRequestInfo } from '../utils/request-info';
 import { setTheme, type Theme } from '../utils/theme.server';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/theme-switch';
 
 const ThemeFormSchema = z.object({

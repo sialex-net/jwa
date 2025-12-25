@@ -1,4 +1,3 @@
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/edit-post';
 
 export default function Component({ params }: Route.ComponentProps) {

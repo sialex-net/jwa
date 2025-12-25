@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import { appContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
 import * as schema from '@/data/drizzle/schema';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/home';
 
 export async function loader({ context, request }: Route.LoaderArgs) {

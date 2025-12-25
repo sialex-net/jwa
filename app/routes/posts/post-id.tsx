@@ -1,4 +1,3 @@
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/post-id';
 
 export default function Component({ params }: Route.ComponentProps) {

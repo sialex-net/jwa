@@ -8,7 +8,6 @@ import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/login';
 
 const LoginSchema = coerceFormValue(

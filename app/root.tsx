@@ -9,7 +9,6 @@ import {
 } from 'react-router';
 import { contextStorageMiddleware } from '@/app/middleware/context-storage';
 import { libsqlMiddleware } from '@/app/middleware/libsql';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
 import { GeneralErrorBoundary } from './components/error-boundary';

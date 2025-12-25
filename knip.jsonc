@@ -9,8 +9,5 @@
 	"ignoreBinaries": ["turso"],
 	"ignoreDependencies": ["cloudflare", "tailwindcss"],
 	"ignoreFiles": ["worktrees/**"],
-	"project": ["**/*.{mjs,ts,tsx}"],
-	// knipIgnoreUnresolved: knip doesn't recognize compilerOptions.rootDirs
-	// in referenced config/tsconfig.cloudflare.json
-	"tags": ["-knipIgnoreUnresolved"]
+	"project": ["**/*.{mjs,ts,tsx}"]
 }

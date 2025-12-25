@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { GeneralErrorBoundary } from '../components/error-boundary';
 import { Icon } from '../components/ui/icon';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/catch-all';
 
 export function loader() {

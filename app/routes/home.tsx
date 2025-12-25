@@ -1,6 +1,5 @@
 import filmSummaries from '../assets/films/film-summaries.json';
 import heroImage from '../assets/images/hero.webp';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/home';
 
 export default function Component(_: Route.ComponentProps) {

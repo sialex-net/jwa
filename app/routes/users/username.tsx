@@ -8,7 +8,6 @@ import { Button } from '@/app/components/ui/button';
 import { getClientCf } from '@/app/middleware/libsql';
 import { getUserImgSrc } from '@/app/utils/images';
 import * as schema from '@/data/drizzle/schema';
-/** @knipIgnoreUnresolved */
 import type { Route } from './+types/username';
 
 export async function loader({ params }: Route.LoaderArgs) {
