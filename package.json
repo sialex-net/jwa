@@ -77,7 +77,6 @@
 		"preview-db:studio": "bun --env-file=.dev.vars.preview drizzle-kit studio --config=./config/drizzle.config.ts",
 		"preview:preview": "CLOUDFLARE_ENV=preview react-router build && vite preview",
 		"preview:production": "CLOUDFLARE_ENV=production react-router build && vite preview",
-		"production-db:migrate": "bun --env-file=.dev.vars.production ./data/drizzle/migrate.ts",
 		"production-db:studio": "bun --env-file=.dev.vars.production drizzle-kit studio --config=./config/drizzle.config.ts",
 		"test": "vitest",
 		"test:ci": "vitest run",
