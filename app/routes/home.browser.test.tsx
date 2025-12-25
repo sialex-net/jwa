@@ -16,7 +16,7 @@ describe('home route', () => {
 			props: { initialEntries: ['/'] },
 		});
 
-		let actual = rendered.getByText('Hello world').element().textContent;
-		expect(actual).toMatch(/world/);
+		let actual = rendered.getByText('john wicki').element().textContent;
+		expect(actual).toMatch(/john/);
 	});
 });
