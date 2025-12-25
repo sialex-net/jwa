@@ -16,6 +16,9 @@ export default [
 			]),
 		]),
 	]),
+	...prefix('resources', [
+		route('user-images/:imageId', './routes/resources/user-images/imageId.tsx'),
+	]),
 	route('healthcheck', './routes/healthcheck.tsx'),
 	route('*', './routes/catch-all.tsx'),
 ] satisfies RouteConfig;
