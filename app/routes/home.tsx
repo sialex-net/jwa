@@ -1,3 +1,4 @@
+import filmSummaries from '../assets/films/film-summaries.json';
 import heroImage from '../assets/images/hero.webp';
 /** @knipIgnoreUnresolved */
 import type { Route } from './+types/home';
@@ -23,6 +24,19 @@ export default function Component(_: Route.ComponentProps) {
 					</a>
 				</figcaption>
 			</figure>
+			<section>
+				<h2 className="py-8 font-semibold text-xl">Film Summaries</h2>
+				<ol className="flex flex-col gap-y-8">
+					{filmSummaries.map((film) => (
+						<li key={film.id}>
+							<div>
+								<h3 className="py-2 font-semibold underline">{film.title}</h3>
+								<p>{film.summary}</p>
+							</div>
+						</li>
+					))}
+				</ol>
+			</section>
 		</div>
 	);
 }
