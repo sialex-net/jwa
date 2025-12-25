@@ -8,7 +8,7 @@ export default [
 	route('users', './routes/users/users.tsx', [
 		index('./routes/users/home.tsx'),
 		...prefix(':username', [
-			index('./routes/username.tsx'),
+			index('./routes/users/username.tsx'),
 			...prefix('posts', [
 				index('./routes/posts/home.tsx'),
 				route(':postId', './routes/posts/post-id.tsx'),
