@@ -2,12 +2,12 @@ import { sql } from 'drizzle-orm';
 import { customType, integer, text } from 'drizzle-orm/sqlite-core';
 import { nanoid } from 'nanoid';
 
-export let id = text('id', { mode: 'text' })
+let id = text('id', { mode: 'text' })
 	.primaryKey()
 	.notNull()
 	.$defaultFn(() => nanoid());
 
-export let timestamps = {
+let timestamps = {
 	createdAt: integer('created_at', { mode: 'timestamp_ms' })
 		.notNull()
 		.default(sql`(unixepoch() * 1000)`),
@@ -16,10 +16,12 @@ export let timestamps = {
 		.default(sql`(unixepoch() * 1000)`),
 };
 
-export let blobAsArrayBuffer = customType<{
+let blobAsArrayBuffer = customType<{
 	data: ArrayBuffer;
 }>({
 	dataType() {
 		return 'blob';
 	},
 });
+
+export { blobAsArrayBuffer, id, timestamps };
