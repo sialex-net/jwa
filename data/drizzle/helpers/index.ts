@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { integer, text } from 'drizzle-orm/sqlite-core';
+import { customType, integer, text } from 'drizzle-orm/sqlite-core';
 import { nanoid } from 'nanoid';
 
 export let id = text('id', { mode: 'text' })
@@ -15,3 +15,11 @@ export let timestamps = {
 		.notNull()
 		.default(sql`(unixepoch() * 1000)`),
 };
+
+export let blobAsArrayBuffer = customType<{
+	data: ArrayBuffer;
+}>({
+	dataType() {
+		return 'blob';
+	},
+});
