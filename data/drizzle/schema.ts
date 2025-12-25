@@ -1,6 +1,6 @@
 import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import * as t from 'drizzle-orm/sqlite-core';
-import { id, timestamps } from './helpers';
+import { blobAsArrayBuffer, id, timestamps } from './helpers';
 
 let users = t.sqliteTable('users', {
 	email: t.text('email').notNull().unique(),
@@ -22,7 +22,7 @@ let posts = t.sqliteTable('posts', {
 
 let userImages = t.sqliteTable('user_images', {
 	altText: t.text('alt_text'),
-	blob: t.blob(),
+	blob: blobAsArrayBuffer('blob'),
 	contentType: t.text('content_type'),
 	id,
 	userId: t
@@ -33,7 +33,7 @@ let userImages = t.sqliteTable('user_images', {
 
 let postImages = t.sqliteTable('post_images', {
 	altText: t.text('alt_text'),
-	blob: t.blob(),
+	blob: blobAsArrayBuffer('blob'),
 	contentType: t.text('content_type'),
 	id,
 	postId: t
