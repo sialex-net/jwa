@@ -97,3 +97,20 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 		</main>
 	);
 }
+
+export const meta: Route.MetaFunction = ({ params, matches }) => {
+	let postsMatch = matches.find((m) => m?.id === 'routes/posts/posts') as {
+		data: Route.ComponentProps['loaderData'];
+	};
+
+	let displayName = postsMatch?.data?.data.owner.username ?? params.username;
+	let postCount = postsMatch?.data?.data.owner.posts.length ?? 0;
+	let postsText = postCount === 1 ? 'post' : 'posts';
+	return [
+		{ title: `${displayName}'s Posts | John Wicki` },
+		{
+			content: `Checkout ${displayName}'s ${postCount} ${postsText} on John Wicki`,
+			name: 'description',
+		},
+	];
+};
