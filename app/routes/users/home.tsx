@@ -31,15 +31,17 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 	return (
 		<>
 			<h1>Users</h1>
-			<ul>
-				{loaderData.data.query.map((user) => (
-					<li key={user.id}>
-						<Link to={`/users/${user.username}`}>
-							{user.username ?? user.email}
-						</Link>
-					</li>
-				))}
-			</ul>
+			<main>
+				<ul>
+					{loaderData.data.query.map((user) => (
+						<li key={user.id}>
+							<Link to={`/users/${user.username}`}>
+								{user.username ?? user.email}
+							</Link>
+						</li>
+					))}
+				</ul>
+			</main>
 			{loaderData.data.hostname === 'localhost' && (
 				<div>
 					<p>APP_ENV={loaderData.data.appEnv}</p>
