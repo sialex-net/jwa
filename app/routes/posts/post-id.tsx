@@ -8,6 +8,7 @@ import { getClientCf } from '@/app/middleware/libsql';
 import { getPostImgSrc } from '@/app/utils/images';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/post-id';
+import type { Route as PostsRoute } from './+types/posts';
 
 export async function loader({ params }: Route.LoaderArgs) {
 	let client = getClientCf();
@@ -113,3 +114,23 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 		</div>
 	);
 }
+
+export const meta: Route.MetaFunction = ({ loaderData, params, matches }) => {
+	let postsMatch = matches.find((m) => m?.id === 'routes/posts/posts') as
+		| undefined
+		| { data: PostsRoute.ComponentProps['loaderData'] };
+
+	let displayName = postsMatch?.data.data.owner.username ?? params.username;
+	let postTitle = loaderData.data.post.title ?? 'Post';
+	let postContentsSummary =
+		loaderData.data.post.content && loaderData.data.post.content.length > 100
+			? `${loaderData.data.post.content.slice(0, 97)}...`
+			: 'No content';
+	return [
+		{ title: `${postTitle} | ${displayName}'s Posts | John Wicki` },
+		{
+			content: postContentsSummary,
+			name: 'description',
+		},
+	];
+};
