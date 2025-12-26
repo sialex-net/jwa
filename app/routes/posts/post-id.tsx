@@ -1,5 +1,5 @@
 import { invariantResponse } from '@epic-web/invariant';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { Form, Link, redirect } from 'react-router';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
@@ -14,7 +14,16 @@ export async function loader({ params }: Route.LoaderArgs) {
 	let db = drizzle(client, { logger: true, schema });
 
 	let query = await db
-		.select()
+		.select({
+			content: schema.posts.content,
+			createdAt: schema.posts.createdAt,
+			id: schema.posts.id,
+			images: {
+				altText: sql<null | string>`${schema.postImages.altText}`,
+				id: schema.postImages.id,
+			},
+			title: schema.posts.title,
+		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, params.postId))
 		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
@@ -26,13 +35,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 	return {
 		data: {
 			post: {
-				content: query[0].posts.content,
-				created: query[0].posts.createdAt,
-				id: query[0].posts.id,
-				images: query[0].post_images
-					? query.map((item) => item.post_images)
-					: [],
-				title: query[0].posts.title,
+				content: query[0].content,
+				created: query[0].createdAt,
+				id: query[0].id,
+				images: query[0].images ? query.map((item) => item.images) : [],
+				title: query[0].title,
 			},
 		},
 	};
