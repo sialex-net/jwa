@@ -1,7 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { Form, Link } from 'react-router';
+import { Form, Link, redirect } from 'react-router';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
 import { Button } from '@/app/components/ui/button';
 import { getClientCf } from '@/app/middleware/libsql';
@@ -36,6 +36,21 @@ export async function loader({ params }: Route.LoaderArgs) {
 			},
 		},
 	};
+}
+
+export async function action({ request, params }: Route.ActionArgs) {
+	invariantResponse(params.postId, 'postId param is required');
+
+	let formData = await request.formData();
+	let intent = formData.get('intent');
+
+	invariantResponse(intent === 'delete', 'Invalid intent');
+
+	let client = getClientCf();
+	let db = drizzle(client, { logger: true, schema });
+
+	await db.delete(schema.posts).where(eq(schema.posts.id, params.postId));
+	return redirect(`/users/${params.username}/posts`);
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
