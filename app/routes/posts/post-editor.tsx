@@ -85,6 +85,11 @@ export function PostEditor({
 				<div>
 					<Label htmlFor={fields.title.id}>Title</Label>
 					<Input
+						aria-describedby={
+							!fields.title.valid
+								? fields.title.errorId
+								: fields.title.descriptionId
+						}
 						aria-invalid={!fields.title.valid ? true : undefined}
 						autoFocus={true}
 						defaultValue={fields.title.defaultValue}
@@ -93,7 +98,19 @@ export function PostEditor({
 						type="text"
 					/>
 				</div>
-				<div>{fields.title.errors}</div>
+				<div
+					aria-hidden={true}
+					className="sr-only"
+					id={fields.title.descriptionId}
+				>
+					Please enter a title
+				</div>
+				<div
+					aria-hidden={true}
+					id={fields.title.errorId}
+				>
+					{fields.title.errors}
+				</div>
 				<div>
 					<Label htmlFor={fields.content.id}>Content</Label>
 					<textarea
