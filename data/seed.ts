@@ -78,43 +78,43 @@ async function seed() {
 	let postImages = await Promise.all([
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/0.avif',
+			filepath: './seed-data/images/posts/0.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/1.avif',
+			filepath: './seed-data/images/posts/1.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/2.avif',
+			filepath: './seed-data/images/posts/2.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/3.avif',
+			filepath: './seed-data/images/posts/3.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/4.avif',
+			filepath: './seed-data/images/posts/4.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/5.avif',
+			filepath: './seed-data/images/posts/5.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/6.webp',
+			filepath: './seed-data/images/posts/6.webp',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/7.webp',
+			filepath: './seed-data/images/posts/7.webp',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/8.avif',
+			filepath: './seed-data/images/posts/8.avif',
 		}),
 		img({
 			altText: 'a poster from the John Wick universe',
-			filepath: './seed-data/images/notes/9.avif',
+			filepath: './seed-data/images/posts/9.avif',
 		}),
 	]);
 
