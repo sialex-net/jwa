@@ -55,3 +55,13 @@ export default function Component({
 		/>
 	);
 }
+
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+	return [
+		{ title: `Edit post: ${loaderData.data.post.title.slice(0, 21)}...` },
+		{
+			content: loaderData.data.post.content ?? loaderData.data.post.title,
+			name: 'description',
+		},
+	];
+};
