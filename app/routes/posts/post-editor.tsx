@@ -114,13 +114,30 @@ export function PostEditor({
 				<div>
 					<Label htmlFor={fields.content.id}>Content</Label>
 					<textarea
+						aria-describedby={
+							!fields.content.valid
+								? fields.content.errorId
+								: fields.content.descriptionId
+						}
 						aria-invalid={!fields.content.valid ? true : undefined}
 						defaultValue={fields.content.defaultValue}
 						id={fields.content.id}
 						name={fields.content.name}
 					></textarea>
 				</div>
-				<div>{fields.content.errors}</div>
+				<div
+					aria-hidden={true}
+					className="sr-only"
+					id={fields.content.descriptionId}
+				>
+					Please enter some content
+				</div>
+				<div
+					aria-hidden={true}
+					id={fields.content.errorId}
+				>
+					{fields.content.errors}
+				</div>
 				<div>
 					<Label>Images</Label>
 					<ul className="flex flex-col gap-y-4">
