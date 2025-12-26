@@ -49,3 +49,13 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 		</>
 	);
 }
+
+export const meta: Route.MetaFunction = () => {
+	return [
+		{ title: 'Users' },
+		{
+			content: 'Users',
+			name: 'description',
+		},
+	];
+};
