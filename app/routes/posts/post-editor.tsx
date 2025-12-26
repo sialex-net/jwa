@@ -85,6 +85,7 @@ export function PostEditor({
 				<div>
 					<Label htmlFor={fields.title.id}>Title</Label>
 					<Input
+						aria-invalid={!fields.title.valid ? true : undefined}
 						autoFocus={true}
 						defaultValue={fields.title.defaultValue}
 						id={fields.title.id}
