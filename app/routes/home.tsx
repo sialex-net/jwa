@@ -39,3 +39,13 @@ export default function Component(_: Route.ComponentProps) {
 		</div>
 	);
 }
+
+export const meta: Route.MetaFunction = () => {
+	return [
+		{ title: 'Welcome to John Wicki' },
+		{
+			content: 'Welcome to John Wicki',
+			name: 'description',
+		},
+	];
+};
