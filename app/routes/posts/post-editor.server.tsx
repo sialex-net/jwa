@@ -34,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	let submission = parseSubmission(formData);
 
 	let client = getClientCf();
-	let db = drizzle(client, { logger: true, schema });
+	let db = drizzle({ client, logger: true, schema });
 
 	let superRefined = coerceFormValue(
 		PostEditorSchema.superRefine(async (data, ctx) => {
