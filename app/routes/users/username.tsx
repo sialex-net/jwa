@@ -43,44 +43,45 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="container mt-36 mb-48 flex flex-col items-center justify-center">
 			<Spacer size="4xs" />
+			<main>
+				<div className="container flex flex-col items-center rounded-3xl bg-muted p-12">
+					<div className="relative w-52">
+						<div className="-top-40 absolute">
+							<div className="relative">
+								<img
+									alt={userDisplayName}
+									className="h-52 w-52 rounded-full object-cover"
+									src={getUserImgSrc(user.image)}
+								/>
+							</div>
+						</div>
+					</div>
 
-			<div className="container flex flex-col items-center rounded-3xl bg-muted p-12">
-				<div className="relative w-52">
-					<div className="-top-40 absolute">
-						<div className="relative">
-							<img
-								alt={userDisplayName}
-								className="h-52 w-52 rounded-full object-cover"
-								src={getUserImgSrc(user.image)}
+					<Spacer size="sm" />
+
+					<div className="flex flex-col items-center">
+						<div className="flex flex-wrap items-center justify-center gap-4">
+							<h1 className="text-center text-h2">{userDisplayName}</h1>
+						</div>
+						<p className="mt-2 text-center text-muted-foreground">
+							Joined {user.joined.toLocaleDateString('en-GB')}
+						</p>
+						<div className="mt-10 flex gap-4">
+							<Button
+								render={(props) => (
+									<Link
+										prefetch="intent"
+										to="posts"
+										{...props}
+									>
+										{userDisplayName}'s posts
+									</Link>
+								)}
 							/>
 						</div>
 					</div>
 				</div>
-
-				<Spacer size="sm" />
-
-				<div className="flex flex-col items-center">
-					<div className="flex flex-wrap items-center justify-center gap-4">
-						<h1 className="text-center text-h2">{userDisplayName}</h1>
-					</div>
-					<p className="mt-2 text-center text-muted-foreground">
-						Joined {user.joined.toLocaleDateString('en-GB')}
-					</p>
-					<div className="mt-10 flex gap-4">
-						<Button
-							render={(props) => (
-								<Link
-									prefetch="intent"
-									to="posts"
-									{...props}
-								>
-									{userDisplayName}'s posts
-								</Link>
-							)}
-						/>
-					</div>
-				</div>
-			</div>
+			</main>
 		</div>
 	);
 }
