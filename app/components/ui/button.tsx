@@ -21,7 +21,7 @@ const buttonVariants = cva({
 		},
 		variant: {
 			destructive:
-				'border border-destructive-7 bg-destructive-3 hover:border-destructive-8 hover:bg-destructive-4 focus-visible:ring-destructive-7',
+				'border border-destructive-7 bg-destructive-2 hover:border-destructive-8 hover:bg-destructive-4 focus-visible:ring-destructive-7',
 			ghost: 'hover:bg-blue-4',
 			link: 'text-primary-5 underline-offset-4 hover:underline',
 			outline:
