@@ -114,6 +114,7 @@ export function PostEditor({
 				<div>
 					<Label htmlFor={fields.content.id}>Content</Label>
 					<textarea
+						aria-invalid={!fields.content.valid ? true : undefined}
 						defaultValue={fields.content.defaultValue}
 						id={fields.content.id}
 						name={fields.content.name}
