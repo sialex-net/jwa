@@ -44,7 +44,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<h2 className="mb-2 pt-12 font-semibold text-3xl lg:mb-6">
 				{loaderData.data.post.title}
 			</h2>
-			<div className="overflow-y-auto pb-24">
+			<div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto pb-24">
 				<ul className="flex flex-wrap gap-5 py-5">
 					{loaderData.data.post.images.map((image) =>
 						image ? (

@@ -59,7 +59,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 							</h1>
 						</Link>
 						{loaderData.data.owner.posts.length > 0 ? (
-							<ul className="overflow-y-auto overflow-x-hidden pb-12">
+							<ul className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto overflow-x-hidden pb-12">
 								{loaderData.data.owner.posts.map((post) =>
 									post ? (
 										<li

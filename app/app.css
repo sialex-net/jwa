@@ -2,6 +2,8 @@
 @import "tailwindcss";
 @source ".";
 
+@plugin "tailwind-scrollbar";
+
 @theme {
 	--font-mono:
 		"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
