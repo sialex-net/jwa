@@ -21,7 +21,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(query, 'Owner not found', { status: 404 });
+	invariantResponse(query.length, 'Username not found', { status: 404 });
 
 	return {
 		data: {
