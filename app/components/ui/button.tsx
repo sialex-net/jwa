@@ -27,7 +27,7 @@ const buttonVariants = cva({
 			outline:
 				'border border-blue-7 bg-background text-blue-12 hover:border-blue-8 hover:bg-blue-4',
 			primary:
-				'border border-primary-6 bg-primary-2 hover:border-primary-8 hover:bg-primary-5 focus-visible:ring-primary-7',
+				'border border-primary-6 bg-primary-2 hover:border-primary-8 hover:bg-primary-5',
 			secondary:
 				'border border-secondary-7 bg-secondary-3 hover:border-secondary-8 hover:bg-secondary-4 focus-visible:ring-secondary-7',
 		},
