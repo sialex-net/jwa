@@ -11,7 +11,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let url = new URL(request.url);
 
 	let client = getClientCf();
-	let db = drizzle(client, { logger: true, schema });
+	let db = drizzle(client, { logger: false, schema });
 
 	let query = await db.select().from(schema.users);
 

@@ -9,7 +9,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 	invariantResponse(params.imageId, 'Image ID is required', { status: 400 });
 
 	let client = getClientCf();
-	let db = drizzle({ client, logger: true, schema });
+	let db = drizzle({ client, logger: false, schema });
 
 	let image = await db
 		.select()

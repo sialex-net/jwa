@@ -10,7 +10,7 @@ export { action } from './post-editor.server';
 
 export async function loader({ params }: Route.LoaderArgs) {
 	let client = getClientCf();
-	let db = drizzle({ client, logger: true, schema });
+	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db
 		.select({

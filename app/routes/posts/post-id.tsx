@@ -11,7 +11,7 @@ import type { Route } from './+types/post-id';
 
 export async function loader({ params }: Route.LoaderArgs) {
 	let client = getClientCf();
-	let db = drizzle({ client, logger: true, schema });
+	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db
 		.select({
@@ -54,7 +54,7 @@ export async function action({ request, params }: Route.ActionArgs) {
 	invariantResponse(intent === 'delete', 'Invalid intent');
 
 	let client = getClientCf();
-	let db = drizzle({ client, logger: true, schema });
+	let db = drizzle({ client, logger: false, schema });
 
 	await db.delete(schema.posts).where(eq(schema.posts.id, params.postId));
 	return redirect(`/users/${params.username}/posts`);
