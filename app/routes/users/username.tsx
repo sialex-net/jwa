@@ -85,6 +85,19 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 	);
 }
 
+export const meta: Route.MetaFunction = ({ loaderData, params }) => {
+	let displayName = loaderData?.data.user.username ?? params.username;
+	return [
+		{ title: `${displayName} | John Wicki` },
+		/* biome-ignore-start assist/source/useSortedKeys: .*/
+		{
+			name: 'description',
+			content: `Profile of ${displayName} on John Wicki`,
+		},
+		/* biome-ignore-end assist/source/useSortedKeys: .*/
+	];
+};
+
 export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
