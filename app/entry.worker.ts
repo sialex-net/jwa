@@ -1,5 +1,6 @@
 import { WorkerEntrypoint } from 'cloudflare:workers';
 import { Hono } from 'hono';
+import { basicAuth } from 'hono/basic-auth';
 import { logger } from 'hono/logger';
 import { getLoadContext } from './context';
 import { httpsOnly } from './middleware/hono/https-only';
@@ -16,6 +17,14 @@ class HonoRequestHandler extends WorkerEntrypoint<Env> {
 	constructor(ctx: ExecutionContext, env: Env) {
 		super(ctx, env);
 		this.app = new Hono<AppEnv>();
+
+		this.app.use(async (c, next) => {
+			let auth = basicAuth({
+				password: c.env.BASIC_AUTH_PASSWORD,
+				username: c.env.BASIC_AUTH_USERNAME,
+			});
+			return auth(c, next);
+		});
 
 		if (import.meta.env.DEV) {
 			this.app.use(logger());
