@@ -11,9 +11,7 @@ import { cn } from '@/app/utils/cn';
 import { getPostImgSrc } from '@/app/utils/images';
 import type { Route } from './+types/edit-post';
 
-const titleMinLength = 1;
 const titleMaxLength = 100;
-const contentMinLength = 1;
 const contentMaxLength = 10000;
 
 export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
@@ -32,13 +30,21 @@ const ImageFieldsetSchema = z.object({
 export type ImageFieldset = z.infer<typeof ImageFieldsetSchema>;
 
 export const PostEditorSchema = z.object({
-	content: z.string().min(contentMinLength).max(contentMaxLength),
+	content: z
+		.string({
+			error: (iss) => (iss.input === undefined ? 'Content is required' : null),
+		})
+		.max(contentMaxLength),
 	id: z.string().optional(),
 	images: z
 		.array(ImageFieldsetSchema)
 		.max(5, { message: 'Maximum number of images exceeded' })
 		.optional(),
-	title: z.string().min(titleMinLength).max(titleMaxLength),
+	title: z
+		.string({
+			error: (iss) => (iss.input === undefined ? 'Title is required' : null),
+		})
+		.max(titleMaxLength),
 });
 
 export function PostEditor({

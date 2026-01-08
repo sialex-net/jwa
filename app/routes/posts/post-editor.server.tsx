@@ -1,5 +1,4 @@
 import { parseSubmission, report } from '@conform-to/react/future';
-import { coerceFormValue } from '@conform-to/zod/v4/future';
 import { invariantResponse } from '@epic-web/invariant';
 import { parseFormData } from '@remix-run/form-data-parser';
 import { eq, sql } from 'drizzle-orm';
@@ -36,67 +35,65 @@ export async function action({ request }: ActionFunctionArgs) {
 	let client = getClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
-	let superRefined = coerceFormValue(
-		PostEditorSchema.superRefine(async (data, ctx) => {
-			if (!data.id) return;
+	let superRefined = PostEditorSchema.superRefine(async (data, ctx) => {
+		if (!data.id) return;
 
-			let post = await db
-				.select({ id: schema.posts.id })
-				.from(schema.posts)
-				.where(eq(schema.posts.id, data.id))
-				.get();
+		let post = await db
+			.select({ id: schema.posts.id })
+			.from(schema.posts)
+			.where(eq(schema.posts.id, data.id))
+			.get();
 
-			if (!post) {
-				ctx.addIssue({
-					code: 'custom',
-					message: 'Post not found',
-				});
-			}
-		}).transform(async ({ images = [], ...data }) => {
-			let postId = data.id;
-			return {
-				...data,
-				id: postId,
-				imageUpdates: await Promise.all(
-					images.filter(imageHasId).map(async (i) => {
-						if (imageHasFile(i)) {
-							let fileExt = i.file.name.split('.').pop();
-							return {
-								altText: i.altText ?? null,
-								blob: await i.file.arrayBuffer(),
-								contentType: fileExt
-									? `image/${i.file.name.split('.').pop()}`
-									: '',
-								id: i.id,
-								newId: nanoid(),
-							};
-						} else {
-							return {
-								altText: i.altText ?? null,
-								id: i.id,
-							};
-						}
+		if (!post) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'Post not found',
+			});
+		}
+	}).transform(async ({ images = [], ...data }) => {
+		let postId = data.id;
+		return {
+			...data,
+			id: postId,
+			imageUpdates: await Promise.all(
+				images.filter(imageHasId).map(async (i) => {
+					if (imageHasFile(i)) {
+						let fileExt = i.file.name.split('.').pop();
+						return {
+							altText: i.altText ?? null,
+							blob: await i.file.arrayBuffer(),
+							contentType: fileExt
+								? `image/${i.file.name.split('.').pop()}`
+								: '',
+							id: i.id,
+							newId: nanoid(),
+						};
+					} else {
+						return {
+							altText: i.altText ?? null,
+							id: i.id,
+						};
+					}
+				}),
+			),
+			newImages: await Promise.all(
+				images
+					.filter(imageHasFile)
+					.filter((i) => !i.id)
+					.map(async (image) => {
+						let fileExt = image.file.name.split('.').pop();
+						return {
+							altText: image.altText ?? null,
+							blob: await image.file.arrayBuffer(),
+							contentType: fileExt
+								? `image/${image.file.name.split('.').pop()}`
+								: '',
+							postId,
+						};
 					}),
-				),
-				newImages: await Promise.all(
-					images
-						.filter(imageHasFile)
-						.filter((i) => !i.id)
-						.map(async (image) => {
-							let fileExt = image.file.name.split('.').pop();
-							return {
-								altText: image.altText ?? null,
-								blob: await image.file.arrayBuffer(),
-								contentType: fileExt
-									? `image/${image.file.name.split('.').pop()}`
-									: '',
-								postId,
-							};
-						}),
-				),
-			};
-		}),
-	);
+			),
+		};
+	});
 
 	let result = await superRefined.safeParseAsync(submission.payload);
 
