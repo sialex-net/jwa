@@ -42,4 +42,11 @@ let postImages = t.sqliteTable('post_images', {
 	...timestamps,
 });
 
-export { postImages, posts, userImages, users };
+let passwords = t.sqliteTable('passwords', {
+	hash: t.text('hash').notNull(),
+	userId: t
+		.text('user_id')
+		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
+});
+
+export { passwords, postImages, posts, userImages, users };
