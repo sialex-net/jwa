@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { faker } from '@faker-js/faker';
+import { genSaltSync, hashSync } from 'bcrypt-ts/node';
 import { drizzle } from 'drizzle-orm/libsql';
 import { UniqueEnforcer } from 'enforce-unique';
 import { getClientNode } from './clients/libsql-node';
@@ -55,6 +56,13 @@ async function img({
 			: filepath.endsWith('.webp')
 				? 'image/webp'
 				: 'image/avif',
+	};
+}
+
+function createPasswordHash(password: string = faker.internet.password()) {
+	let salt = genSaltSync(10);
+	return {
+		hash: hashSync(password, salt),
 	};
 }
 
@@ -156,6 +164,11 @@ async function seed() {
 
 			await db.insert(schema.postImages).values(postImagesSelection);
 		}
+
+		await db.insert(schema.passwords).values({
+			...createPasswordHash(userResult.email),
+			userId: userResult.id,
+		});
 	}
 	console.timeEnd(`Created ${totalUsers} new users...`);
 
