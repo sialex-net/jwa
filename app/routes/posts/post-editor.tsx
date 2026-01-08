@@ -3,6 +3,7 @@ import { useForm } from '@conform-to/react/future';
 import * as React from 'react';
 import { Form } from 'react-router';
 import { z } from 'zod';
+import { ErrorList } from '@/app/components/forms';
 import { Button } from '@/app/components/ui/button';
 import { Icon } from '@/app/components/ui/icon';
 import { Input } from '@/app/components/ui/input';
@@ -297,27 +298,5 @@ function ImageChooser({ meta }: { meta: FieldMetadata<ImageFieldset> }) {
 				/>
 			</div>
 		</fieldset>
-	);
-}
-
-type ListOfErrors = Array<null | string | undefined> | null | undefined;
-
-function ErrorList({ id, errors }: { errors?: ListOfErrors; id?: string }) {
-	let errorsToRender = errors?.filter(Boolean);
-	if (!errorsToRender?.length) return null;
-	return (
-		<ul
-			className="flex flex-col gap-1"
-			id={id}
-		>
-			{errorsToRender.map((e) => (
-				<li
-					className="text-[10px] text-foreground-destructive"
-					key={e}
-				>
-					{e}
-				</li>
-			))}
-		</ul>
 	);
 }
