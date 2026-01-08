@@ -29,6 +29,7 @@ export async function action({ request }: Route.ActionArgs) {
 				error: {
 					issues: result.error.issues,
 				},
+				hideFields: ['password'],
 			}),
 		};
 	}
