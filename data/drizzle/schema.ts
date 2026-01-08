@@ -49,4 +49,10 @@ let passwords = t.sqliteTable('passwords', {
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
 });
 
+type SelectUser = typeof users.$inferSelect;
+
+type SelectPassword = typeof passwords.$inferSelect;
+
+export type { SelectPassword, SelectUser };
+
 export { passwords, postImages, posts, userImages, users };
