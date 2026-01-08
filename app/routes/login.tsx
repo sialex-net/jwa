@@ -42,11 +42,9 @@ export async function action({ request }: Route.ActionArgs) {
 export default function Component({ actionData }: Route.ComponentProps) {
 	let [searchParams] = useSearchParams();
 	let [submittedValue, setSubmittedValue] = React.useState('');
-	let { form, fields } = useForm({
+	let { form, fields } = useForm(LoginSchema, {
 		// Sync result of last submission
 		lastResult: actionData?.result,
-		// Reuse validation logic on client
-		schema: LoginSchema,
 	});
 
 	React.useEffect(() => {
