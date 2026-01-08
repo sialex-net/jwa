@@ -29,6 +29,9 @@ importers:
       '@remix-run/form-data-parser':
         specifier: ^0.14.0
         version: 0.14.0
+      bcrypt-ts:
+        specifier: ^8.0.0
+        version: 8.0.0
       cookie:
         specifier: ^1.0.2
         version: 1.0.2
@@ -1797,6 +1800,10 @@ packages:
   baseline-browser-mapping@2.8.28:
     resolution: {integrity: sha512-gYjt7OIqdM0PcttNYP2aVrr2G0bMALkBaoehD4BuRGjAOtipg0b6wHg1yNL+s5zSnLZZrGHOw4IrND8CD+3oIQ==}
     hasBin: true
+
+  bcrypt-ts@8.0.0:
+    resolution: {integrity: sha512-v4X8KKKQfBQY5XHxrErsImUtDDGt53N6nKHgK9M72EN3GgJfxUimKCOGV9FTOPxVZzUdcyJEnmnpWMs3MgZq3w==}
+    engines: {node: '>=20'}
 
   birpc@0.2.14:
     resolution: {integrity: sha512-37FHE8rqsYM5JEKCnXFyHpBCzvgHEExwVVTq+nUmloInU7l8ezD1TpOhKpS8oe1DTYFqEK27rFZVKG43oTqXRA==}
@@ -4745,6 +4752,8 @@ snapshots:
   balanced-match@1.0.2: {}
 
   baseline-browser-mapping@2.8.28: {}
+
+  bcrypt-ts@8.0.0: {}
 
   birpc@0.2.14: {}
 
