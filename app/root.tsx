@@ -12,6 +12,7 @@ import { libsqlMiddleware } from '@/app/middleware/libsql';
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
 import { GeneralErrorBoundary } from './components/error-boundary';
+import { Button } from './components/ui/button';
 import { appContext, getContext } from './context';
 import fontStylesheetUrl from './fonts.css?url';
 import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
@@ -80,26 +81,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App({ loaderData }: Route.ComponentProps) {
 	return (
 		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between md:max-w-screen-xl">
-			<nav className="py-8">
-				<ol className="flex justify-center gap-x-8">
-					<li>
-						<Link
-							className="text-lg"
-							to="/"
-						>
-							Home
-						</Link>
-					</li>
-					<li>
-						<Link
-							className="text-lg"
-							to="/users"
-						>
-							Users
-						</Link>
-					</li>
-				</ol>
-			</nav>
+			<header className="container">
+				<nav className="flex items-center justify-between py-8">
+					<Link
+						className="text-lg"
+						to="/"
+					>
+						Home
+					</Link>
+					<ol className="flex items-center gap-x-8">
+						<li>
+							<Link
+								className="text-lg"
+								to="/users"
+							>
+								Users
+							</Link>
+						</li>
+						<li>
+							<Button
+								render={(props) => (
+									<Link
+										className="text-lg"
+										to="/login"
+										{...props}
+									>
+										Log In
+									</Link>
+								)}
+							/>
+						</li>
+					</ol>
+				</nav>
+			</header>
 			<Outlet />
 			<footer className="flex justify-end gap-x-8 pr-8 pb-8 font-mono">
 				<ThemeSwitch userPreference={loaderData.requestInfo.userPrefs.theme} />
