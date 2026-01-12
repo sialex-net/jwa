@@ -8,6 +8,30 @@ import { getClientCf } from '../middleware/libsql';
 import { combineResponseInits } from './http';
 import { getSessionStorage } from './sessions.server';
 
+let userIdKey = 'userId';
+
+export async function getUserId(env: Env, request: Request) {
+	let cookieSession = await getSessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+	let userId = cookieSession.get(userIdKey);
+	if (!userId) return null;
+	let client = getClientCf();
+	let db = drizzle(client, { logger: false, schema });
+	let user = await db
+		.select({ id: schema.users.id })
+		.from(schema.users)
+		.where(eq(schema.users.id, userId))
+		.get();
+
+	client.close();
+
+	if (!user) {
+		throw await logout({ env, request });
+	}
+	return user.id;
+}
+
 export async function login({
 	email,
 	password,
