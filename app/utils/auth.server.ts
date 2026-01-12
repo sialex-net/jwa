@@ -37,11 +37,40 @@ export async function getUserId(env: Env, request: Request) {
 	return user.id;
 }
 
+async function requireUserId(env: Env, request: Request) {
+	let userId = await getUserId(env, request);
+	if (!userId) {
+		throw redirect('/');
+	}
+	return userId;
+}
+
 export async function requireAnonymous(env: Env, request: Request) {
 	let userId = await getUserId(env, request);
 	if (userId) {
 		throw redirect('/');
 	}
+}
+
+export async function requireUser(env: Env, request: Request) {
+	let userId = await requireUserId(env, request);
+	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
+	let db = drizzle(client, { logger: false, schema });
+	let user = await db
+		.select({ id: schema.users.id, username: schema.users.username })
+		.from(schema.users)
+		.where(eq(schema.users.id, userId))
+		.get();
+
+	client.close();
+
+	if (!user) {
+		throw await logout({ env, request });
+	}
+	return user;
 }
 
 export async function login({
