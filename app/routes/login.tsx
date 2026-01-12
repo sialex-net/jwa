@@ -15,7 +15,7 @@ const LoginSchema = z.object({
 			iss.input === undefined ? 'Email is required' : 'Invalid email address',
 	}),
 	password: z.string('Password is required'),
-	remember: z.boolean().default(false),
+	remember: z.preprocess((v) => v === 'on', z.boolean()),
 });
 
 export async function action({ request }: Route.ActionArgs) {
