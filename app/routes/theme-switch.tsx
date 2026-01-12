@@ -36,7 +36,7 @@ export function ThemeSwitch({
 }) {
 	let fetcher = useFetcher<typeof action>();
 
-	let { form } = useForm({
+	let { form } = useForm(ThemeFormSchema, {
 		id: 'theme-switch',
 		lastResult: fetcher.data?.result,
 	});

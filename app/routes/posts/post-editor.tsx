@@ -48,12 +48,10 @@ export function PostEditor({
 	actionData?: Route.ComponentProps['actionData'];
 	post?: Route.ComponentProps['loaderData']['data']['post'];
 }) {
-	let { form, fields, intent } = useForm({
+	let { form, fields, intent } = useForm(PostEditorSchema, {
 		defaultValue: post,
 		// Sync result of last submission
 		lastResult: actionData?.result,
-		// Reuse validation logic on client
-		schema: PostEditorSchema,
 	});
 
 	let imageList = fields.images.getFieldList();
