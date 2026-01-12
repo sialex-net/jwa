@@ -12,8 +12,10 @@ import { libsqlMiddleware } from '@/app/middleware/libsql';
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
 import { GeneralErrorBoundary } from './components/error-boundary';
+import { appContext, getContext } from './context';
 import fontStylesheetUrl from './fonts.css?url';
 import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
+import { getUserId } from './utils/auth.server';
 import { ClientHintCheck, getHints } from './utils/client-hints';
 import { getTheme } from './utils/theme.server';
 
@@ -34,7 +36,10 @@ export const links: Route.LinksFunction = () =>
 				...linksArr,
 			];
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
+	let { env } = getContext(context, appContext);
+	let userId = await getUserId(env, request);
+
 	return data({
 		requestInfo: {
 			hints: getHints(request),
@@ -42,6 +47,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 				theme: getTheme(request),
 			},
 		},
+		user: { id: userId },
 	});
 }
 
