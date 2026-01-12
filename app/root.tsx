@@ -1,3 +1,5 @@
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/libsql';
 import {
 	data,
 	Link,
@@ -8,7 +10,8 @@ import {
 	ScrollRestoration,
 } from 'react-router';
 import { contextStorageMiddleware } from '@/app/middleware/context-storage';
-import { libsqlMiddleware } from '@/app/middleware/libsql';
+import { getClientCf, libsqlMiddleware } from '@/app/middleware/libsql';
+import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
 import { GeneralErrorBoundary } from './components/error-boundary';
@@ -19,6 +22,7 @@ import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
 import { getUserId } from './utils/auth.server';
 import { ClientHintCheck, getHints } from './utils/client-hints';
 import { getTheme } from './utils/theme.server';
+import { useOptionalUser } from './utils/user';
 
 export const middleware = [contextStorageMiddleware, libsqlMiddleware];
 
@@ -41,6 +45,22 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await getUserId(env, request);
 
+	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
+	let db = drizzle(client, { logger: false, schema });
+
+	let user = userId
+		? await db
+				.select({ id: schema.users.id, username: schema.users.username })
+				.from(schema.users)
+				.where(eq(schema.users.id, userId))
+				.get()
+		: null;
+
+	client.close();
+
 	return data({
 		requestInfo: {
 			hints: getHints(request),
@@ -48,7 +68,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 				theme: getTheme(request),
 			},
 		},
-		user: { id: userId },
+		user,
 	});
 }
 
@@ -79,6 +99,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
+	let user = useOptionalUser();
 	return (
 		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between md:max-w-screen-xl">
 			<header className="container">
@@ -99,17 +120,33 @@ export default function App({ loaderData }: Route.ComponentProps) {
 							</Link>
 						</li>
 						<li>
-							<Button
-								render={(props) => (
-									<Link
-										className="text-lg"
-										to="/login"
-										{...props}
-									>
-										Log In
-									</Link>
-								)}
-							/>
+							{user ? (
+								<div className="flex items-center gap-2">
+									<Button
+										render={(props) => (
+											<Link
+												className="flex items-center gap-2"
+												to={`/users/${user.username}`}
+												{...props}
+											>
+												Profile
+											</Link>
+										)}
+									/>
+								</div>
+							) : (
+								<Button
+									render={(props) => (
+										<Link
+											className="text-lg"
+											to="/login"
+											{...props}
+										>
+											Log In
+										</Link>
+									)}
+								/>
+							)}
 						</li>
 					</ol>
 				</nav>
