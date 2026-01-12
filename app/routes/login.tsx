@@ -1,5 +1,4 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { coerceFormValue } from '@conform-to/zod/v4/future';
 import * as React from 'react';
 import { Form, redirect, useSearchParams } from 'react-router';
 import { z } from 'zod';
@@ -10,16 +9,14 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import type { Route } from './+types/login';
 
-const LoginSchema = coerceFormValue(
-	z.object({
-		email: z.email({
-			error: (iss) =>
-				iss.input === undefined ? 'Email is required' : 'Invalid email address',
-		}),
-		password: z.string('Password is required'),
-		remember: z.boolean().default(false),
+const LoginSchema = z.object({
+	email: z.email({
+		error: (iss) =>
+			iss.input === undefined ? 'Email is required' : 'Invalid email address',
 	}),
-);
+	password: z.string('Password is required'),
+	remember: z.boolean().default(false),
+});
 
 export async function action({ request }: Route.ActionArgs) {
 	let formData = await request.formData();
