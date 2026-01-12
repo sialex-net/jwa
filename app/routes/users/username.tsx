@@ -93,17 +93,31 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 							</Form>
 						) : null}
 						<div className="mt-10 flex gap-4">
-							<Button
-								render={(props) => (
-									<Link
-										prefetch="intent"
-										to="posts"
-										{...props}
-									>
-										{userDisplayName}'s posts
-									</Link>
-								)}
-							/>
+							{isLoggedInUser ? (
+								<Button
+									render={(props) => (
+										<Link
+											prefetch="intent"
+											to="posts"
+											{...props}
+										>
+											My posts
+										</Link>
+									)}
+								/>
+							) : (
+								<Button
+									render={(props) => (
+										<Link
+											prefetch="intent"
+											to="posts"
+											{...props}
+										>
+											{userDisplayName}'s posts
+										</Link>
+									)}
+								/>
+							)}
 						</div>
 					</div>
 				</div>
