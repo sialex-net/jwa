@@ -37,6 +37,13 @@ export async function getUserId(env: Env, request: Request) {
 	return user.id;
 }
 
+export async function requireAnonymous(env: Env, request: Request) {
+	let userId = await getUserId(env, request);
+	if (userId) {
+		throw redirect('/');
+	}
+}
+
 export async function login({
 	email,
 	password,
