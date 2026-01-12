@@ -37,10 +37,23 @@ export async function getUserId(env: Env, request: Request) {
 	return user.id;
 }
 
-async function requireUserId(env: Env, request: Request) {
+async function requireUserId(
+	env: Env,
+	request: Request,
+	{ redirectTo }: { redirectTo?: null | string } = {},
+) {
 	let userId = await getUserId(env, request);
 	if (!userId) {
-		throw redirect('/');
+		let requestUrl = new URL(request.url);
+		redirectTo =
+			redirectTo === null
+				? null
+				: (redirectTo ?? `${requestUrl.pathname}${requestUrl.search}`);
+		let loginParams = redirectTo ? new URLSearchParams({ redirectTo }) : null;
+		let loginRedirect = ['/login', loginParams?.toString()]
+			.filter(Boolean)
+			.join('?');
+		throw redirect(loginRedirect);
 	}
 	return userId;
 }
