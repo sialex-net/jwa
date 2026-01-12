@@ -236,7 +236,7 @@ function ImageChooser({ meta }: { meta: FieldMetadata<ImageFieldset> }) {
 							{existingImage ? (
 								<input
 									defaultValue={fields.id.defaultValue}
-									id={fields.file.id}
+									id={fields.id.id}
 									key={fields.id.key}
 									name={fields.id.name}
 									type="hidden"
