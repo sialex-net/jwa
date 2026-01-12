@@ -8,6 +8,7 @@ import { appContext, getContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import { getPostImgSrc } from '@/app/utils/images';
+import { useOptionalUser } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/post-id';
 import type { Route as PostsRoute } from './+types/posts';
@@ -25,6 +26,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 				altText: sql<null | string>`${schema.postImages.altText}`,
 				id: schema.postImages.id,
 			},
+			ownerId: schema.posts.userId,
 			title: schema.posts.title,
 		})
 		.from(schema.posts)
@@ -42,6 +44,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 				created: query[0].createdAt,
 				id: query[0].id,
 				images: query[0].images ? query.map((item) => item.images) : [],
+				ownerId: query[0].ownerId,
 				title: query[0].title,
 			},
 		},
@@ -71,6 +74,9 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
+	let user = useOptionalUser();
+	let isOwner = user?.id === loaderData.data.post.ownerId;
+
 	return (
 		<div className="absolute inset-0 flex flex-col px-10">
 			<h2 className="mb-2 pt-12 font-semibold text-3xl lg:mb-6">
@@ -98,28 +104,30 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					{loaderData.data.post.content}
 				</p>
 			</div>
-			<div className={floatingToolbarClassName}>
-				<Form method="POST">
-					<Button
-						name="intent"
-						type="submit"
-						value="delete"
-						variant="destructive"
-					>
-						Delete
-					</Button>
-				</Form>
-				<Button
-					render={(props) => (
-						<Link
-							to="edit"
-							{...props}
+			{isOwner ? (
+				<div className={floatingToolbarClassName}>
+					<Form method="POST">
+						<Button
+							name="intent"
+							type="submit"
+							value="delete"
+							variant="destructive"
 						>
-							Edit
-						</Link>
-					)}
-				/>
-			</div>
+							Delete
+						</Button>
+					</Form>
+					<Button
+						render={(props) => (
+							<Link
+								to="edit"
+								{...props}
+							>
+								Edit
+							</Link>
+						)}
+					/>
+				</div>
+			) : null}
 		</div>
 	);
 }
