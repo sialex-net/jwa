@@ -2,9 +2,11 @@ import { invariantResponse } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { Link, NavLink, Outlet } from 'react-router';
+import { Icon } from '@/app/components/ui/icon';
 import { getClientCf } from '@/app/middleware/libsql';
 import { cn } from '@/app/utils/cn';
 import { getUserImgSrc } from '@/app/utils/images';
+import { useOptionalUser } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/posts';
 
@@ -28,6 +30,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 			owner: {
 				email: query[0].users.email,
 				image: query[0].user_images?.id,
+				ownerId: query[0].users.id,
 				posts: query[0].posts ? query.map((item) => item.posts) : [],
 				username: query[0].users.username,
 			},
@@ -36,6 +39,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
+	let user = useOptionalUser();
+	let isOwner = user?.id === loaderData.data.owner.ownerId;
 	let ownerDisplayName =
 		loaderData.data.owner.username ?? loaderData.data.owner.email;
 	let navLinkDefaultClassName =
@@ -58,6 +63,18 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 								<span className="break-all">{ownerDisplayName}'s</span> Posts
 							</h1>
 						</Link>
+						{isOwner ? (
+							<li className="p-1 pr-0">
+								<NavLink
+									className={({ isActive }) =>
+										cn(navLinkDefaultClassName, isActive && 'bg-accent')
+									}
+									to="new"
+								>
+									<Icon name="plus">New Post</Icon>
+								</NavLink>
+							</li>
+						) : null}
 						{loaderData.data.owner.posts.length > 0 ? (
 							<ul className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto overflow-x-hidden pb-12">
 								{loaderData.data.owner.posts.map((post) =>
