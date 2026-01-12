@@ -1,12 +1,14 @@
 import { invariantResponse } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { Link } from 'react-router';
+import { Form, Link } from 'react-router';
 import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { Spacer } from '@/app/components/spacer';
 import { Button } from '@/app/components/ui/button';
+import { Icon } from '@/app/components/ui/icon';
 import { getClientCf } from '@/app/middleware/libsql';
 import { getUserImgSrc } from '@/app/utils/images';
+import { useOptionalUser } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/username';
 
@@ -29,6 +31,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 		data: {
 			user: {
 				email: query.users.email,
+				id: query.users.id,
 				image: query.user_images?.id,
 				joined: query.users.createdAt,
 				username: query.users.username,
@@ -40,6 +43,9 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Component({ loaderData }: Route.ComponentProps) {
 	let { user } = loaderData.data;
 	let userDisplayName = user.username ?? user.email;
+	let loggedInUser = useOptionalUser();
+	let isLoggedInUser = user.id === loggedInUser?.id;
+
 	return (
 		<div className="container mt-36 mb-48 flex flex-col items-center justify-center">
 			<Spacer size="4xs" />
@@ -66,6 +72,26 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 						<p className="mt-2 text-center text-muted-foreground">
 							Joined {user.joined.toLocaleDateString('en-GB')}
 						</p>
+						{isLoggedInUser ? (
+							<Form
+								action="/logout"
+								className="mt-3"
+								method="POST"
+							>
+								<Button
+									size="pill"
+									type="submit"
+									variant="link"
+								>
+									<Icon
+										className="scale-125 max-md:scale-150"
+										name="exit"
+									>
+										Logout
+									</Icon>
+								</Button>
+							</Form>
+						) : null}
 						<div className="mt-10 flex gap-4">
 							<Button
 								render={(props) => (
