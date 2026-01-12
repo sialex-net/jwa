@@ -40,6 +40,11 @@ export default function Component({ actionData }: Route.ComponentProps) {
 	let [searchParams] = useSearchParams();
 	let [submittedValue, setSubmittedValue] = React.useState('');
 	let { form, fields } = useForm(LoginSchema, {
+		defaultValue: {
+			email: '',
+			password: '',
+			remember: false,
+		},
 		// Sync result of last submission
 		lastResult: actionData?.result,
 	});
