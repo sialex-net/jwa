@@ -38,7 +38,7 @@ export async function getUserId(env: Env, request: Request) {
 	return user.id;
 }
 
-async function requireUserId(
+export async function requireUserId(
 	env: Env,
 	request: Request,
 	{ redirectTo }: { redirectTo?: null | string } = {},
