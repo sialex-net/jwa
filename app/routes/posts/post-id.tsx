@@ -4,7 +4,9 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { Form, Link, redirect } from 'react-router';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
 import { Button } from '@/app/components/ui/button';
+import { appContext, getContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
+import { requireUser } from '@/app/utils/auth.server';
 import { getPostImgSrc } from '@/app/utils/images';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/post-id';
@@ -46,8 +48,12 @@ export async function loader({ params }: Route.LoaderArgs) {
 	};
 }
 
-export async function action({ request, params }: Route.ActionArgs) {
-	invariantResponse(params.postId, 'postId param is required');
+export async function action({ context, params, request }: Route.LoaderArgs) {
+	let { env } = getContext(context, appContext);
+	let user = await requireUser(env, request);
+	invariantResponse(user.username === params.username, 'Not authorized', {
+		status: 403,
+	});
 
 	let formData = await request.formData();
 	let intent = formData.get('intent');
@@ -55,6 +61,9 @@ export async function action({ request, params }: Route.ActionArgs) {
 	invariantResponse(intent === 'delete', 'Invalid intent');
 
 	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
 	let db = drizzle({ client, logger: false, schema });
 
 	await db.delete(schema.posts).where(eq(schema.posts.id, params.postId));
