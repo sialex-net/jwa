@@ -64,7 +64,7 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 			});
 		}
 	}).transform(async ({ images = [], ...data }) => {
-		let postId = data.id;
+		let postId = data.id ?? nanoid();
 		return {
 			...data,
 			id: postId,
@@ -121,6 +121,17 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 	}
 
 	invariantResponse(result.data.id, 'Post id not found', { status: 404 });
+
+	// insert if new post
+	await db
+		.insert(schema.posts)
+		.values({
+			content: result.data.content,
+			id: result.data.id,
+			title: result.data.title,
+			userId: user.id,
+		})
+		.onConflictDoNothing();
 
 	let post = await db
 		.select({
