@@ -8,7 +8,12 @@ import { getClientCf } from '../middleware/libsql';
 import { combineResponseInits } from './http';
 import { getSessionStorage } from './sessions.server';
 
-let userIdKey = 'userId';
+const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;
+
+export let getSessionExpirationDate = () =>
+	new Date(Date.now() + SESSION_EXPIRATION_TIME);
+
+export let userIdKey = 'userId';
 
 export async function getUserId(env: Env, request: Request) {
 	let cookieSession = await getSessionStorage(env).getSession(

@@ -1,12 +1,18 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { Form, redirect } from 'react-router';
 import { z } from 'zod';
-import { login } from '@/app/utils/auth.server';
+import {
+	getSessionExpirationDate,
+	login,
+	userIdKey,
+} from '@/app/utils/auth.server';
+import { getSessionStorage } from '@/app/utils/sessions.server';
 import { ErrorList } from '../components/forms';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { appContext, getContext } from '../context';
 import type { Route } from './+types/login';
 
 const LoginSchema = z.object({
@@ -18,7 +24,7 @@ const LoginSchema = z.object({
 	remember: z.preprocess((v) => v === 'on', z.boolean()),
 });
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ context, request }: Route.ActionArgs) {
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
 	let transformed = LoginSchema.transform(async (data, ctx) => {
@@ -47,7 +53,23 @@ export async function action({ request }: Route.ActionArgs) {
 		};
 	}
 
-	return redirect(`/users/${result.data.user.username}`);
+	let { env } = getContext(context, appContext);
+
+	let { remember, user } = result.data;
+
+	let cookieSession = await getSessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+
+	cookieSession.set(userIdKey, user.id);
+
+	return redirect(`/users/${user.username}`, {
+		headers: {
+			'set-cookie': await getSessionStorage(env).commitSession(cookieSession, {
+				expires: remember ? getSessionExpirationDate() : undefined,
+			}),
+		},
+	});
 }
 
 export default function Component({ actionData }: Route.ComponentProps) {
