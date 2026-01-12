@@ -1,8 +1,14 @@
-# APP_ENV=
+APP_ENV=
 
-# # for easy deployments to correct account through wrangler cli
-# CLOUDFLARE_ACCOUNT_ID=
-# CLOUDFLARE_API_TOKEN=
+# hono basic auth middleware
+BASIC_AUTH_PASSWORD=
+BASIC_AUTH_USERNAME=
 
-# TURSO_AUTH_TOKEN=
-# TURSO_URL=
+# for easy deployments to correct account through wrangler cli
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+
+SESSION_SECRET=
+
+TURSO_AUTH_TOKEN=
+TURSO_URL=
