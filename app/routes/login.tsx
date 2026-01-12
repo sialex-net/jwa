@@ -1,5 +1,6 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { Form, redirect } from 'react-router';
+import { Form, redirect, useSearchParams } from 'react-router';
+import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
 import {
 	getSessionExpirationDate,
@@ -28,6 +29,7 @@ const LoginSchema = z.object({
 			iss.input === undefined ? 'Email is required' : 'Invalid email address',
 	}),
 	password: z.string('Password is required'),
+	redirectTo: z.string().optional(),
 	remember: z.preprocess((v) => v === 'on', z.boolean()),
 });
 
@@ -62,7 +64,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 		};
 	}
 
-	let { remember, user } = result.data;
+	let { redirectTo, remember, user } = result.data;
 
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
@@ -70,7 +72,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	cookieSession.set(userIdKey, user.id);
 
-	return redirect(`/users/${user.username}`, {
+	return redirect(safeRedirect(redirectTo), {
 		headers: {
 			'set-cookie': await getSessionStorage(env).commitSession(cookieSession, {
 				expires: remember ? getSessionExpirationDate() : undefined,
@@ -80,10 +82,14 @@ export async function action({ context, request }: Route.ActionArgs) {
 }
 
 export default function Component({ actionData }: Route.ComponentProps) {
+	let [searchParams] = useSearchParams();
+	let redirectTo = searchParams.get('redirectTo');
+
 	let { form, fields } = useForm(LoginSchema, {
 		defaultValue: {
 			email: '',
 			password: '',
+			redirectTo,
 			remember: false,
 		},
 		// Sync result of last submission
@@ -190,6 +196,14 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					Please check if you want your login to be remembered for 14 days
 				</div>
 			</div>
+
+			<input
+				defaultValue={fields.redirectTo.defaultValue}
+				id={fields.redirectTo.id}
+				key={fields.redirectTo.key}
+				name={fields.redirectTo.name}
+				type="hidden"
+			/>
 
 			<ErrorList
 				errors={form.errors}
