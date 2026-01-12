@@ -1,15 +1,26 @@
 import { invariantResponse } from '@epic-web/invariant';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
+import { appContext, getContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
+import { requireUser } from '@/app/utils/auth.server';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/edit-post';
 import { PostEditor } from './post-editor';
 
 export { action } from './post-editor.server';
 
-export async function loader({ params }: Route.LoaderArgs) {
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+	let { env } = getContext(context, appContext);
+	let user = await requireUser(env, request);
+	invariantResponse(user.username === params.username, 'Not authorized', {
+		status: 403,
+	});
+
 	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
 	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db

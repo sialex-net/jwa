@@ -5,7 +5,9 @@ import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { nanoid } from 'nanoid';
 import { type ActionFunctionArgs, redirect } from 'react-router';
+import { appContext, getContext } from '@/app/context';
 import { getClientCf } from '@/app/middleware/libsql';
+import { requireUser } from '@/app/utils/auth.server';
 import * as schema from '@/data/drizzle/schema';
 import {
 	type ImageFieldset,
@@ -25,7 +27,15 @@ function imageHasId(
 	return Boolean(image.id);
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ context, params, request }: ActionFunctionArgs) {
+	invariantResponse(params.username, 'username param is required');
+
+	let { env } = getContext(context, appContext);
+	let user = await requireUser(env, request);
+	invariantResponse(user.username === params.username, 'Not authorized', {
+		status: 403,
+	});
+
 	let formData = await parseFormData(request, {
 		maxFileSize: MAX_UPLOAD_SIZE,
 	});
@@ -33,6 +43,9 @@ export async function action({ request }: ActionFunctionArgs) {
 	let submission = parseSubmission(formData);
 
 	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
 	let db = drizzle({ client, logger: false, schema });
 
 	let superRefined = PostEditorSchema.superRefine(async (data, ctx) => {
