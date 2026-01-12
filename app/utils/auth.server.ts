@@ -2,6 +2,7 @@ import { compare } from 'bcrypt-ts/browser';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
+import { safeRedirect } from 'remix-utils/safe-redirect';
 import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import { getClientCf } from '../middleware/libsql';
@@ -99,9 +100,11 @@ export async function login({
 export async function logout(
 	{
 		env,
+		redirectTo = '/',
 		request,
 	}: {
 		env: Env;
+		redirectTo?: string;
 		request: Request;
 	},
 	responseInit?: ResponseInit,
@@ -110,7 +113,7 @@ export async function logout(
 		request.headers.get('cookie'),
 	);
 	throw redirect(
-		'/',
+		safeRedirect(redirectTo),
 		combineResponseInits(responseInit, {
 			headers: {
 				'set-cookie':
