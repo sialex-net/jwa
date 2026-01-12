@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
 	getSessionExpirationDate,
 	login,
+	requireAnonymous,
 	userIdKey,
 } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
@@ -15,6 +16,12 @@ import { Label } from '../components/ui/label';
 import { appContext, getContext } from '../context';
 import type { Route } from './+types/login';
 
+export async function loader({ context, request }: Route.LoaderArgs) {
+	let { env } = getContext(context, appContext);
+	await requireAnonymous(env, request);
+	return {};
+}
+
 const LoginSchema = z.object({
 	email: z.email({
 		error: (iss) =>
@@ -25,6 +32,8 @@ const LoginSchema = z.object({
 });
 
 export async function action({ context, request }: Route.ActionArgs) {
+	let { env } = getContext(context, appContext);
+	await requireAnonymous(env, request);
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
 	let transformed = LoginSchema.transform(async (data, ctx) => {
@@ -52,8 +61,6 @@ export async function action({ context, request }: Route.ActionArgs) {
 			}),
 		};
 	}
-
-	let { env } = getContext(context, appContext);
 
 	let { remember, user } = result.data;
 
