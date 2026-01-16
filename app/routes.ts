@@ -18,7 +18,9 @@ export default [
 			]),
 		]),
 	]),
-	route('settings', './routes/settings/settings.tsx'),
+	route('settings', './routes/settings/settings.tsx', [
+		index('./routes/settings/home.tsx'),
+	]),
 	...prefix('resources', [
 		route('user-images/:imageId', './routes/resources/user-images/imageId.tsx'),
 		route('post-images/:imageId', './routes/resources/post-images/imageId.tsx'),
