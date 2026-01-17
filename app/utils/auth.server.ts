@@ -1,8 +1,9 @@
-import { compare } from 'bcrypt-ts/browser';
+import { compare, genSalt, hash } from 'bcrypt-ts/browser';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
+import z from 'zod';
 import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import { getClientCf } from '../middleware/libsql';
@@ -94,7 +95,7 @@ export async function login({
 	email: SelectUser['email'];
 	password: string;
 }) {
-	return verifyUserPassword(email, password);
+	return verifyUserPassword({ email }, password);
 }
 
 export async function logout(
@@ -123,22 +124,54 @@ export async function logout(
 	);
 }
 
-async function verifyUserPassword(
-	email: SelectUser['email'],
+export async function getPasswordHash(password: string) {
+	let salt = await genSalt(10);
+	return await hash(password, salt);
+}
+
+export async function verifyUserPassword(
+	where: Pick<SelectUser, 'email'> | Pick<SelectUser, 'id'>,
 	password: SelectPassword['hash'],
 ) {
 	let client = getClientCf();
 	let db = drizzle(client, { logger: false, schema });
-	let userWithPassword = await db
-		.select({
-			hash: schema.passwords.hash,
-			id: schema.users.id,
-			username: schema.users.username,
-		})
-		.from(schema.users)
-		.where(eq(schema.users.email, email))
-		.leftJoin(schema.passwords, eq(schema.users.id, schema.passwords.userId))
-		.get();
+
+	const WhereSchema = z.object({
+		email: z.string().optional(),
+		id: z.string().optional(),
+	});
+
+	let whereResult = WhereSchema.parse(where);
+
+	let userWithPassword = whereResult.id
+		? await db
+				.select({
+					hash: schema.passwords.hash,
+					id: schema.users.id,
+					username: schema.users.username,
+				})
+				.from(schema.users)
+				.where(eq(schema.users.id, whereResult.id))
+				.leftJoin(
+					schema.passwords,
+					eq(schema.users.id, schema.passwords.userId),
+				)
+				.get()
+		: whereResult.email
+			? await db
+					.select({
+						hash: schema.passwords.hash,
+						id: schema.users.id,
+						username: schema.users.username,
+					})
+					.from(schema.users)
+					.where(eq(schema.users.email, whereResult.email))
+					.leftJoin(
+						schema.passwords,
+						eq(schema.users.id, schema.passwords.userId),
+					)
+					.get()
+			: undefined;
 
 	client.close();
 
