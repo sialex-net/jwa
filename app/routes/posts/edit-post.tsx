@@ -27,14 +27,16 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 
 	let query = await db
 		.select({
-			content: schema.posts.content,
-			createdAt: schema.posts.createdAt,
-			id: schema.posts.id,
-			images: {
+			postImages: {
 				altText: sql<null | string>`${schema.postImages.altText}`,
 				id: schema.postImages.id,
 			},
-			title: schema.posts.title,
+			posts: {
+				content: schema.posts.content,
+				createdAt: schema.posts.createdAt,
+				id: schema.posts.id,
+				title: schema.posts.title,
+			},
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, params.postId))
@@ -42,20 +44,14 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(
-		query.length > 0,
-		`postId ${params.postId} does not exist`,
-		{
-			status: 404,
-		},
-	);
+	invariantResponse(query.length, `postId ${params.postId} does not exist`, {
+		status: 404,
+	});
 
 	return {
-		data: {
-			post: {
-				...query[0],
-				images: query[0].images ? query.map((item) => item.images) : [],
-			},
+		post: {
+			images: query[0].postImages ? query.map((item) => item.postImages) : [],
+			...query[0].posts,
 		},
 	};
 }
@@ -67,16 +63,16 @@ export default function Component({
 	return (
 		<PostEditor
 			actionData={actionData}
-			post={loaderData.data.post}
+			post={loaderData.post}
 		/>
 	);
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
 	return [
-		{ title: `Edit post: ${loaderData?.data.post.title.slice(0, 21)}...` },
+		{ title: `Edit post: ${loaderData?.post.title.slice(0, 21)}...` },
 		{
-			content: loaderData?.data.post.content ?? loaderData?.data.post.title,
+			content: loaderData?.post.content ?? loaderData?.post.title,
 			name: 'description',
 		},
 	];

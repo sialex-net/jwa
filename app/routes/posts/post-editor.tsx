@@ -53,7 +53,7 @@ export function PostEditor({
 	post,
 }: {
 	actionData?: Route.ComponentProps['actionData'];
-	post?: Route.ComponentProps['loaderData']['data']['post'];
+	post?: Route.ComponentProps['loaderData']['post'];
 }) {
 	let { form, fields, intent } = useForm(PostEditorSchema, {
 		defaultValue: post,
