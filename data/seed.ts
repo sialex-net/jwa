@@ -18,6 +18,18 @@ function createUser() {
 	let username = uniqueUsernameEnforcer
 		.enforce(() => {
 			return (
+				firstName.toLowerCase() +
+				faker.string.numeric({ length: 2 }) +
+				faker.string.alphanumeric({ length: 3 })
+			);
+		})
+		.slice(0, 20)
+		.toLowerCase()
+		.replace(/[^a-z0-9_]/g, '_');
+
+	let emailUsername = uniqueUsernameEnforcer
+		.enforce(() => {
+			return (
 				faker.string.alphanumeric({ length: 2 }) +
 				'_' +
 				faker.internet.username({
@@ -29,9 +41,10 @@ function createUser() {
 		.slice(0, 20)
 		.toLowerCase()
 		.replace(/[^a-z0-9_]/g, '_');
+
 	return {
-		email: `${username}@example.com`,
-		name: `${firstName} ${lastName}`,
+		email: `${emailUsername}@example.com`,
+		name: firstName,
 		username,
 	};
 }
