@@ -1,4 +1,5 @@
-import { type Client, createClient } from '@libsql/client';
+import type { Client } from '@libsql/client';
+import { createClient } from '@libsql/client';
 import { TURSO_AUTH_TOKEN, TURSO_URL } from '../../config/process-env';
 
 let client: Client;
