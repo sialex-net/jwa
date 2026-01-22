@@ -27,6 +27,7 @@ export default [
 	...prefix('resources', [
 		route('user-images/:imageId', './routes/resources/user-images/imageId.tsx'),
 		route('post-images/:imageId', './routes/resources/post-images/imageId.tsx'),
+		route('download-user-data', './routes/resources/download-user-data.tsx'),
 	]),
 	route('healthcheck', './routes/healthcheck.tsx'),
 	route('*', './routes/catch-all.tsx'),
