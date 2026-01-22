@@ -7,7 +7,13 @@
 	],
 	// install turso cli with homebrew
 	"ignoreBinaries": ["turso"],
-	"ignoreDependencies": ["cloudflare", "tailwindcss", "tailwind-scrollbar"],
+	"ignoreDependencies": [
+		"cloudflare",
+		"node-addon-api",
+		"node-gyp",
+		"tailwindcss",
+		"tailwind-scrollbar"
+	],
 	"ignoreFiles": ["worktrees/**"],
 	"project": ["**/*.{mjs,ts,tsx}"]
 }
