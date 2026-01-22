@@ -2,6 +2,7 @@ import { invariantResponse } from '@epic-web/invariant';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { Form, Link, redirect } from 'react-router';
+import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
 import { Button } from '@/app/components/ui/button';
 import { appContext, getContext } from '@/app/context';
@@ -135,10 +136,10 @@ export const meta: Route.MetaFunction = ({ loaderData, params, matches }) => {
 		| { data: PostsRoute.ComponentProps['loaderData'] };
 
 	let displayName = postsMatch?.data.data.owner.username ?? params.username;
-	let postTitle = loaderData.data.post.title ?? 'Post';
+	let postTitle = loaderData?.data.post.title ?? 'Post';
 	let postContentsSummary =
-		loaderData.data.post.content && loaderData.data.post.content.length > 100
-			? `${loaderData.data.post.content.slice(0, 97)}...`
+		loaderData?.data.post.content && loaderData?.data.post.content.length > 100
+			? `${loaderData?.data.post.content.slice(0, 97)}...`
 			: 'No content';
 	return [
 		{ title: `${postTitle} | ${displayName}'s Posts | John Wicki` },
@@ -148,3 +149,7 @@ export const meta: Route.MetaFunction = ({ loaderData, params, matches }) => {
 		},
 	];
 };
+
+export function ErrorBoundary() {
+	return <GeneralErrorBoundary />;
+}
