@@ -12,7 +12,7 @@ let users = t.sqliteTable('users', {
 let posts = t.sqliteTable('posts', {
 	content: t.text('content'),
 	id,
-	title: t.text('title').notNull().unique(),
+	title: t.text('title').notNull(),
 	userId: t
 		.text('user_id')
 		.notNull()
