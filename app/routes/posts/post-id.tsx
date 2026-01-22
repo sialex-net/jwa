@@ -36,7 +36,13 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(query, 'Post not found', { status: 404 });
+	invariantResponse(
+		query.length > 0,
+		`postId ${params.postId} does not exist`,
+		{
+			status: 404,
+		},
+	);
 
 	return {
 		data: {
@@ -55,9 +61,13 @@ export async function loader({ params }: Route.LoaderArgs) {
 export async function action({ context, params, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
-	invariantResponse(user.username === params.username, 'Not authorized', {
-		status: 403,
-	});
+	invariantResponse(
+		user.username === params.username,
+		'You do not have permission',
+		{
+			status: 403,
+		},
+	);
 
 	let formData = await request.formData();
 	let intent = formData.get('intent');
