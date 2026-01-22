@@ -53,6 +53,10 @@ type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
 
-export type { SelectPassword, SelectUser };
+type SelectPost = typeof posts.$inferSelect;
+
+type SelectPostImage = typeof postImages.$inferSelect;
+
+export type { SelectPassword, SelectPost, SelectPostImage, SelectUser };
 
 export { passwords, postImages, posts, userImages, users };
