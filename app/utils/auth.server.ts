@@ -95,6 +95,33 @@ export async function login({
 	return verifyUserPassword({ email }, password);
 }
 
+export async function signup({
+	email,
+	username,
+	password,
+}: {
+	email: SelectUser['email'];
+	password: string;
+	username: SelectUser['username'];
+}) {
+	let hashedPassword = await getPasswordHash(password);
+
+	let client = connectClientCf();
+	let db = drizzle(client, { logger: false, schema });
+
+	let user = await db
+		.insert(schema.users)
+		.values({ email: email.toLowerCase(), username: username.toLowerCase() })
+		.returning({ id: schema.users.id })
+		.get();
+
+	await db
+		.insert(schema.passwords)
+		.values({ hash: hashedPassword, userId: user.id });
+
+	return user;
+}
+
 export async function logout(
 	{
 		env,
