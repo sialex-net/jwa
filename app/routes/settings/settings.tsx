@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { Spacer } from '@/app/components/spacer';
 import { Icon } from '@/app/components/ui/icon';
 import { appContext, getContext } from '@/app/context.js';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUserId } from '@/app/utils/auth.server';
 import { cn } from '@/app/utils/cn';
 import { useUser } from '@/app/utils/user';
@@ -21,10 +21,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let user = await db

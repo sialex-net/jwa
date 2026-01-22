@@ -5,7 +5,7 @@ import { Form, Link, redirect } from 'react-router';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
 import { Button } from '@/app/components/ui/button';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import { getPostImgSrc } from '@/app/utils/images';
 import { useOptionalUser } from '@/app/utils/user';
@@ -14,7 +14,7 @@ import type { Route } from './+types/post-id';
 import type { Route as PostsRoute } from './+types/posts';
 
 export async function loader({ params }: Route.LoaderArgs) {
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db
@@ -63,10 +63,7 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 
 	invariantResponse(intent === 'delete', 'Invalid intent');
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	await db.delete(schema.posts).where(eq(schema.posts.id, params.postId));

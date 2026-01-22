@@ -10,7 +10,7 @@ import {
 	ScrollRestoration,
 } from 'react-router';
 import { contextStorageMiddleware } from '@/app/middleware/context-storage';
-import { getClientCf, libsqlMiddleware } from '@/app/middleware/libsql';
+import { connectClientCf, libsqlMiddleware } from '@/app/middleware/libsql';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/root';
 import tailwindcssStylesheetUrl from './app.css?url';
@@ -45,10 +45,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await getUserId(env, request);
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let user = userId

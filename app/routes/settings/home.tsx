@@ -10,7 +10,7 @@ import { Icon } from '@/app/components/ui/icon';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUserId } from '@/app/utils/auth.server';
 import { getUserImgSrc } from '@/app/utils/images';
 import { EmailSchema, UsernameSchema } from '@/app/utils/user-validation';
@@ -26,10 +26,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let user = await db
@@ -133,10 +130,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 	let submission = parseSubmission(formData);
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let superRefined = ProfileFormSchema.superRefine(
@@ -299,10 +293,7 @@ function UpdateProfile() {
 }
 
 async function deleteDataAction({ userId }: ProfileActionArgs) {
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	await db.delete(schema.users).where(eq(schema.users.id, userId));

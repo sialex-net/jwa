@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { Link, NavLink, Outlet } from 'react-router';
 import { Icon } from '@/app/components/ui/icon';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { cn } from '@/app/utils/cn';
 import { getUserImgSrc } from '@/app/utils/images';
 import { useOptionalUser } from '@/app/utils/user';
@@ -11,7 +11,7 @@ import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/posts';
 
 export async function loader({ params }: Route.LoaderArgs) {
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db

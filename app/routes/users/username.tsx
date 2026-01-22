@@ -6,14 +6,14 @@ import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { Spacer } from '@/app/components/spacer';
 import { Button } from '@/app/components/ui/button';
 import { Icon } from '@/app/components/ui/icon';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { getUserImgSrc } from '@/app/utils/images';
 import { useOptionalUser } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/username';
 
 export async function loader({ params }: Route.LoaderArgs) {
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let query = await db

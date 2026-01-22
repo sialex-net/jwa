@@ -1,14 +1,14 @@
 import { invariantResponse } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/imageId';
 
 export async function loader({ params }: Route.LoaderArgs) {
 	invariantResponse(params.imageId, 'Image ID is required', { status: 400 });
 
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	let image = await db

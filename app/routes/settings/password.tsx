@@ -9,7 +9,7 @@ import { Icon } from '@/app/components/ui/icon';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import {
 	getPasswordHash,
 	requireUserId,
@@ -41,11 +41,7 @@ const ChangePasswordFormSchema = z
 
 export async function action({ context, request }: Route.ActionArgs) {
 	let { env } = getContext(context, appContext);
-	let client = getClientCf();
 	let userId = await requireUserId(env, request);
-	if (client.closed) {
-		client.reconnect();
-	}
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
 
@@ -79,9 +75,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { newPassword } = result.data;
 
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	await db

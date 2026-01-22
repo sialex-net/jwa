@@ -12,7 +12,7 @@ import { ErrorList } from '@/app/components/forms';
 import { Button } from '@/app/components/ui/button';
 import { Icon } from '@/app/components/ui/icon';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUserId } from '@/app/utils/auth.server';
 import { getUserImgSrc } from '@/app/utils/images';
 import * as schema from '@/data/drizzle/schema';
@@ -37,10 +37,7 @@ const AvatarFormSchema = z.object({
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let user = await db
@@ -61,10 +58,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 		maxFileSize: MAX_SIZE,
 	});
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: true, schema });
 
 	let intent = formData.get('intent');

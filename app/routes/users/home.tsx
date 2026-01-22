@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/libsql';
 import { Link } from 'react-router';
 import { appContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/home';
 
@@ -10,7 +10,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let tursoUrl = context.get(appContext).env.TURSO_URL;
 	let url = new URL(request.url);
 
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	let query = await db.select().from(schema.users);

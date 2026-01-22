@@ -2,7 +2,7 @@ import { invariantResponse } from '@epic-web/invariant';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/edit-post';
@@ -17,10 +17,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		status: 403,
 	});
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db

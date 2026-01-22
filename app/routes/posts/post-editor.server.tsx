@@ -6,7 +6,7 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { nanoid } from 'nanoid';
 import { type ActionFunctionArgs, redirect } from 'react-router';
 import { appContext, getContext } from '@/app/context';
-import { getClientCf } from '@/app/middleware/libsql';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import * as schema from '@/data/drizzle/schema';
 import {
@@ -42,10 +42,7 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 
 	let submission = parseSubmission(formData);
 
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
 	let superRefined = PostEditorSchema.superRefine(async (data, ctx) => {
