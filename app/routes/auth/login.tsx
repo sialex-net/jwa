@@ -110,6 +110,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 								: fields.email.descriptionId
 						}
 						aria-invalid={!fields.email.valid ? true : undefined}
+						autoComplete="email"
 						className="peer pt-7 leading-5"
 						defaultValue={fields.email.defaultValue}
 						id={fields.email.id}
@@ -146,6 +147,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 								: fields.password.descriptionId
 						}
 						aria-invalid={!fields.password.valid ? true : undefined}
+						autoComplete="current-password"
 						className="peer pt-7 leading-5"
 						defaultValue={fields.password.defaultValue}
 						id={fields.password.id}
