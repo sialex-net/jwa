@@ -27,6 +27,7 @@ let userImages = t.sqliteTable('user_images', {
 	id,
 	userId: t
 		.text('user_id')
+		.notNull()
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
 	...timestamps,
 });
@@ -38,6 +39,7 @@ let postImages = t.sqliteTable('post_images', {
 	id,
 	postId: t
 		.text('post_id')
+		.notNull()
 		.references((): AnySQLiteColumn => posts.id, { onDelete: 'cascade' }),
 	...timestamps,
 });
@@ -46,6 +48,7 @@ let passwords = t.sqliteTable('passwords', {
 	hash: t.text('hash').notNull().unique(),
 	userId: t
 		.text('user_id')
+		.notNull()
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
 });
 
