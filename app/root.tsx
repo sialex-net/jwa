@@ -118,24 +118,20 @@ export default function App({ loaderData }: Route.ComponentProps) {
 						</li>
 						<li>
 							{user ? (
-								<div className="flex items-center gap-2">
-									<Button
-										render={(props) => (
-											<Link
-												className="flex items-center gap-2"
-												to={`/users/${user.username}`}
-												{...props}
-											>
-												Profile
-											</Link>
-										)}
-									/>
-								</div>
+								<Button
+									render={(props) => (
+										<Link
+											to={`/users/${user.username}`}
+											{...props}
+										>
+											Profile
+										</Link>
+									)}
+								/>
 							) : (
 								<Button
 									render={(props) => (
 										<Link
-											className="text-lg"
 											to="/login"
 											{...props}
 										>
