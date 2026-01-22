@@ -13,17 +13,17 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let query = await db.select().from(schema.users);
+	let query = await db
+		.select({ users: { username: schema.users.username } })
+		.from(schema.users);
 
 	client.close();
 
 	return {
-		data: {
-			appEnv,
-			hostname: url.hostname,
-			query,
-			tursoUrl,
-		},
+		appEnv,
+		hostname: url.hostname,
+		tursoUrl,
+		users: query.length ? query.map((item) => item.users) : [],
 	};
 }
 
@@ -32,18 +32,22 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 		<>
 			<h1>Users</h1>
 			<main>
-				<ul>
-					{loaderData.data.query.map((user) => (
-						<li key={user.id}>
-							<Link to={`/users/${user.username}`}>{user.username}</Link>
-						</li>
-					))}
-				</ul>
+				{loaderData.users.length ? (
+					<ul>
+						{loaderData.users.map((user) => (
+							<li key={user.username}>
+								<Link to={`/users/${user.username}`}>{user.username}</Link>
+							</li>
+						))}
+					</ul>
+				) : (
+					<p>No users found</p>
+				)}
 			</main>
-			{loaderData.data.hostname === 'localhost' && (
+			{loaderData.hostname === 'localhost' && (
 				<div>
-					<p>APP_ENV={loaderData.data.appEnv}</p>
-					<p>TURSO_URL={loaderData.data.tursoUrl}</p>
+					<p>APP_ENV={loaderData.appEnv}</p>
+					<p>TURSO_URL={loaderData.tursoUrl}</p>
 				</div>
 			)}
 		</>
