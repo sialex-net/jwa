@@ -28,6 +28,7 @@ let userAvatar = t.sqliteTable('user_avatar', {
 	userId: t
 		.text('user_id')
 		.notNull()
+		.unique()
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
 	...timestamps,
 });
