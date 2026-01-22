@@ -55,7 +55,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 						>
 							<img
 								alt={ownerDisplayName}
-								className="h-16 w-16 rounded-full object-cover lg:h-24 lg:w-24"
+								className="aspect-square h-16 w-16 rounded-full object-cover lg:h-24 lg:w-24"
 								src={getUserImgSrc(loaderData.data.owner.image)}
 							/>
 							<h1 className="text-center font-semibold text-sm md:text-base lg:text-left lg:text-xl">
