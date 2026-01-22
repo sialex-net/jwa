@@ -15,7 +15,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 	let db = drizzle({ client, logger: false, schema });
 
 	let query = await db
-		.select()
+		.select({
+			posts: { id: schema.posts.id, title: schema.posts.title },
+			userAvatar: { id: schema.userAvatar.id },
+			users: { id: schema.users.id, username: schema.users.username },
+		})
 		.from(schema.users)
 		.where(eq(schema.users.username, params.username))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
@@ -23,25 +27,25 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(query.length, 'Username not found', { status: 404 });
+	invariantResponse(
+		query.length,
+		`username ${params.username} does not exist`,
+		{ status: 404 },
+	);
 
 	return {
-		data: {
-			owner: {
-				email: query[0].users.email,
-				image: query[0].user_avatar?.id,
-				ownerId: query[0].users.id,
-				posts: query[0].posts ? query.map((item) => item.posts) : [],
-				username: query[0].users.username,
-			},
+		owner: {
+			avatar: query[0].userAvatar,
+			posts: query[0].posts ? query.map((item) => item.posts) : [],
+			...query[0].users,
 		},
 	};
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
 	let user = useOptionalUser();
-	let isOwner = user?.id === loaderData.data.owner.ownerId;
-	let ownerDisplayName = loaderData.data.owner.username;
+	let isOwner = user?.id === loaderData.owner.id;
+	let ownerDisplayName = loaderData.owner.username;
 	let navLinkDefaultClassName =
 		'line-clamp-2 block py-2 pr-6 pl-12 text-base lg:text-lg rounded-l-full';
 	return (
@@ -51,12 +55,12 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					<div className="absolute inset-0 flex flex-col">
 						<Link
 							className="flex flex-col items-center justify-center gap-2 pt-12 pr-4 pb-4 pl-8 lg:flex-row lg:justify-start lg:gap-4"
-							to={`/users/${loaderData.data.owner.username}`}
+							to={`/users/${loaderData.owner.username}`}
 						>
 							<img
 								alt={ownerDisplayName}
 								className="aspect-square h-16 w-16 rounded-full object-cover lg:h-24 lg:w-24"
-								src={getUserImgSrc(loaderData.data.owner.image)}
+								src={getUserImgSrc(loaderData.owner.avatar?.id)}
 							/>
 							<h1 className="text-center font-semibold text-sm md:text-base lg:text-left lg:text-xl">
 								<span className="break-all">{ownerDisplayName}'s</span> Posts
@@ -74,9 +78,9 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 								</NavLink>
 							</div>
 						) : null}
-						{loaderData.data.owner.posts.length > 0 ? (
+						{loaderData.owner.posts.length > 0 ? (
 							<ul className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto overflow-x-hidden pb-12">
-								{loaderData.data.owner.posts.map((post) =>
+								{loaderData.owner.posts.map((post) =>
 									post ? (
 										<li
 											className="p-1 pr-0"
@@ -119,8 +123,8 @@ export const meta: Route.MetaFunction = ({ params, matches }) => {
 		data: Route.ComponentProps['loaderData'];
 	};
 
-	let displayName = postsMatch?.data?.data.owner.username ?? params.username;
-	let postCount = postsMatch?.data?.data.owner.posts.length ?? 0;
+	let displayName = postsMatch?.data?.owner.username ?? params.username;
+	let postCount = postsMatch?.data?.owner.posts.length ?? 0;
 	let postsText = postCount === 1 ? 'post' : 'posts';
 	return [
 		{ title: `${displayName}'s Posts | John Wicki` },
