@@ -90,7 +90,7 @@ async function seed() {
 	let totalUsers = 5;
 	console.time(`Created ${totalUsers} new users...`);
 
-	let userImages = await Promise.all(
+	let userAvatar = await Promise.all(
 		Array.from({ length: 10 }, (_, index) =>
 			img({ filepath: `./seed-data/images/user/${index}.jpeg` }),
 		),
@@ -148,8 +148,8 @@ async function seed() {
 			.returning()
 			.get();
 
-		await db.insert(schema.userImages).values({
-			...userImages[index % 10],
+		await db.insert(schema.userAvatar).values({
+			...userAvatar[index % 10],
 			altText: `Avatar for ${userResult.username}`,
 			userId: userResult.id,
 		});
