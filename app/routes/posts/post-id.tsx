@@ -1,7 +1,9 @@
+import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { invariantResponse } from '@epic-web/invariant';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { Form, Link, redirect } from 'react-router';
+import { data, Form, Link, redirect } from 'react-router';
+import { z } from 'zod';
 import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { floatingToolbarClassName } from '@/app/components/floating-toolbar';
 import { Button } from '@/app/components/ui/button';
@@ -30,11 +32,12 @@ export async function loader({ params }: Route.LoaderArgs) {
 				id: schema.posts.id,
 				title: schema.posts.title,
 			},
-			users: { id: schema.posts.userId },
+			users: { id: schema.users.id },
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, params.postId))
-		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
+		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId))
+		.innerJoin(schema.users, eq(schema.posts.userId, schema.users.id));
 
 	client.close();
 
@@ -51,6 +54,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 	};
 }
 
+const DeleteFormSchema = z.object({
+	intent: z.literal('delete-note'),
+	noteId: z.string(),
+});
+
 export async function action({ context, params, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
@@ -63,18 +71,49 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 	);
 
 	let formData = await request.formData();
-	let intent = formData.get('intent');
 
-	invariantResponse(intent === 'delete', 'Invalid intent');
+	let submission = parseSubmission(formData);
+
+	let result = DeleteFormSchema.safeParse(submission.payload);
+
+	if (!result.success) {
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+				}),
+			},
+			{ status: 400 },
+		);
+	}
+
+	let { noteId } = result.data;
 
 	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
-	await db.delete(schema.posts).where(eq(schema.posts.id, params.postId));
-	return redirect(`/users/${params.username}/posts`);
+	let query = await db
+		.select({
+			posts: { id: schema.posts.id },
+			users: { username: schema.users.username },
+		})
+		.from(schema.posts)
+		.where(eq(schema.posts.id, noteId))
+		.innerJoin(schema.users, eq(schema.posts.userId, schema.users.id))
+		.get();
+
+	invariantResponse(query, `postId ${noteId} does not exist`, { status: 404 });
+
+	await db.delete(schema.posts).where(eq(schema.posts.id, query.posts.id));
+	return redirect(`/users/${query.users.username}/posts`);
 }
 
-export default function Component({ loaderData }: Route.ComponentProps) {
+export default function Component({
+	actionData,
+	loaderData,
+}: Route.ComponentProps) {
 	let user = useOptionalUser();
 	let isOwner = user?.id === loaderData.post.owner.id;
 
@@ -107,16 +146,10 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			</div>
 			{isOwner ? (
 				<div className={floatingToolbarClassName}>
-					<Form method="POST">
-						<Button
-							name="intent"
-							type="submit"
-							value="delete"
-							variant="destructive"
-						>
-							Delete
-						</Button>
-					</Form>
+					<DeleteNote
+						actionData={actionData}
+						id={loaderData.post.id}
+					/>
 					<Button
 						render={(props) => (
 							<Link
@@ -130,6 +163,40 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 				</div>
 			) : null}
 		</div>
+	);
+}
+
+function DeleteNote({
+	id,
+	actionData,
+}: {
+	actionData: Route.ComponentProps['actionData'] | undefined;
+	id: string;
+}) {
+	let { form } = useForm(DeleteFormSchema, {
+		id: 'delete-note',
+		lastResult: actionData?.result,
+	});
+
+	return (
+		<Form
+			method="POST"
+			{...form.props}
+		>
+			<input
+				name="noteId"
+				type="hidden"
+				value={id}
+			/>
+			<Button
+				name="intent"
+				type="submit"
+				value="delete-note"
+				variant="destructive"
+			>
+				Delete
+			</Button>
+		</Form>
 	);
 }
 
