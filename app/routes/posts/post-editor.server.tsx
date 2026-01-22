@@ -137,19 +137,13 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 				altText: sql<null | string>`${schema.postImages.altText}`,
 				id: schema.postImages.id,
 			},
-			posts: {
-				content: schema.posts.content,
-				createdAt: schema.posts.createdAt,
-				id: schema.posts.id,
-			},
 			users: {
-				title: schema.posts.title,
 				username: schema.users.username,
 			},
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, result.data.id))
-		.leftJoin(schema.users, eq(schema.posts.userId, schema.users.id))
+		.innerJoin(schema.users, eq(schema.posts.userId, schema.users.id))
 		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
 
 	let ownerUsername = query[0].users.username;
