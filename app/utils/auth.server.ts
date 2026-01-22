@@ -6,7 +6,7 @@ import { safeRedirect } from 'remix-utils/safe-redirect';
 import z from 'zod';
 import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
-import { getClientCf } from '../middleware/libsql';
+import { connectClientCf } from '../middleware/libsql';
 import { combineResponseInits } from './http';
 import { getSessionStorage } from './sessions.server';
 
@@ -23,7 +23,7 @@ export async function getUserId(env: Env, request: Request) {
 	);
 	let userId = cookieSession.get(userIdKey);
 	if (!userId) return null;
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 	let user = await db
 		.select({ id: schema.users.id })
@@ -69,10 +69,7 @@ export async function requireAnonymous(env: Env, request: Request) {
 
 export async function requireUser(env: Env, request: Request) {
 	let userId = await requireUserId(env, request);
-	let client = getClientCf();
-	if (client.closed) {
-		client.reconnect();
-	}
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 	let user = await db
 		.select({ id: schema.users.id, username: schema.users.username })
@@ -133,7 +130,7 @@ export async function verifyUserPassword(
 	where: Pick<SelectUser, 'email'> | Pick<SelectUser, 'id'>,
 	password: SelectPassword['hash'],
 ) {
-	let client = getClientCf();
+	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
 	const WhereSchema = z.object({
