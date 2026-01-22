@@ -47,12 +47,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 	return {
 		data: {
 			post: {
-				content: query[0].content,
-				created: query[0].createdAt,
-				id: query[0].id,
+				...query[0],
 				images: query[0].images ? query.map((item) => item.images) : [],
-				ownerId: query[0].ownerId,
-				title: query[0].title,
 			},
 		},
 	};
