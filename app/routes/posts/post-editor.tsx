@@ -223,7 +223,7 @@ function ImageChooser({ meta }: { meta: FieldMetadata<ImageFieldset> }) {
 										/>
 									)}
 									{existingImage ? null : (
-										<div className="-top-0.5 -right-0.5 pointer-events-none absolute rotate-12 rounded-sm bg-secondary px-2 py-1 text-secondary-foreground text-xs shadow-md">
+										<div className="pointer-events-none absolute -top-0.5 -right-0.5 rotate-12 rounded-sm bg-secondary px-2 py-1 text-secondary-foreground text-xs shadow-md">
 											new
 										</div>
 									)}

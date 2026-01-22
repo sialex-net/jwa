@@ -52,7 +52,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<main>
 				<div className="container flex flex-col items-center rounded-3xl bg-muted p-12">
 					<div className="relative w-52">
-						<div className="-top-40 absolute">
+						<div className="absolute -top-40">
 							<div className="relative">
 								<img
 									alt={userDisplayName}
