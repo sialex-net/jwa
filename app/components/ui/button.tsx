@@ -1,5 +1,5 @@
-import { mergeProps } from '@base-ui-components/react';
-import { useRender } from '@base-ui-components/react/use-render';
+import { mergeProps } from '@base-ui/react';
+import { useRender } from '@base-ui/react/use-render';
 import type { VariantProps } from 'cva';
 import { cva } from 'cva';
 import { cn } from '@/app/utils/cn';

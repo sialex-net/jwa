@@ -1,4 +1,4 @@
-import { Checkbox as BaseCheckbox } from '@base-ui-components/react/checkbox';
+import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox';
 import { useControl } from '@conform-to/react/future';
 import * as React from 'react';
 import { cn } from '@/app/utils/cn';
