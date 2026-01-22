@@ -1,4 +1,3 @@
-/* biome-ignore-all lint/suspicious/noUnknownAtRules: . */
 @import "tailwindcss";
 @source ".";
 
@@ -11,8 +10,7 @@
 
 	--breakpoint-xs: 30rem;
 
-	/* escape * to avoid biome parse error */
-	--color-\*: initial;
+	--color-*: initial;
 }
 
 /* theme colors
