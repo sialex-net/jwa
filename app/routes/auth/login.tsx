@@ -111,6 +111,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 						}
 						aria-invalid={!fields.email.valid ? true : undefined}
 						autoComplete="email"
+						autoFocus={true}
 						className="peer pt-7 leading-5"
 						defaultValue={fields.email.defaultValue}
 						id={fields.email.id}
