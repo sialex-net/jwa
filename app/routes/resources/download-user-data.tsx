@@ -1,4 +1,4 @@
-import { eq, getTableColumns } from 'drizzle-orm';
+import { eq, getTableColumns, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
@@ -24,9 +24,12 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let userData = await db
 		.select({
 			post: schema.posts,
-			postImages: postImagesColumnsWithoutBlob,
+			postImages: {
+				...postImagesColumnsWithoutBlob,
+				altText: sql<null | string>`${schema.postImages.altText}`,
+			},
 			user: schema.users,
-			userImage: userAvatarColumnsWithoutBlob,
+			userAvatar: userAvatarColumnsWithoutBlob,
 		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
@@ -69,10 +72,10 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			posts: postsData,
 			user: {
 				...userData?.[0].user,
-				image: userData?.[0].userImage
+				avatar: userData?.[0].userAvatar
 					? {
-							...userData?.[0].userImage,
-							url: `${domain}/resources/user-avatar/${userData[0].userImage.id}`,
+							...userData?.[0].userAvatar,
+							url: `${domain}/resources/user-avatar/${userData[0].userAvatar.id}`,
 						}
 					: null,
 			},
