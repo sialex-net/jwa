@@ -43,7 +43,7 @@ let postImages = t.sqliteTable('post_images', {
 });
 
 let passwords = t.sqliteTable('passwords', {
-	hash: t.text('hash').notNull(),
+	hash: t.text('hash').notNull().unique(),
 	userId: t
 		.text('user_id')
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
