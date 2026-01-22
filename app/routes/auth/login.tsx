@@ -2,6 +2,12 @@ import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { Form, redirect, useSearchParams } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
+import { ErrorList } from '@/app/components/forms';
+import { Button } from '@/app/components/ui/button';
+import { Checkbox } from '@/app/components/ui/checkbox';
+import { Input } from '@/app/components/ui/input';
+import { Label } from '@/app/components/ui/label';
+import { appContext, getContext } from '@/app/context';
 import {
 	getSessionExpirationDate,
 	login,
@@ -9,12 +15,6 @@ import {
 	userIdKey,
 } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
-import { ErrorList } from '../components/forms';
-import { Button } from '../components/ui/button';
-import { Checkbox } from '../components/ui/checkbox';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { appContext, getContext } from '../context';
 import type { Route } from './+types/login';
 
 export async function loader({ context, request }: Route.LoaderArgs) {

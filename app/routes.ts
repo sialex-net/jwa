@@ -3,8 +3,8 @@ import { index, prefix, route } from '@react-router/dev/routes';
 
 export default [
 	index('./routes/home.tsx'),
-	route('login', './routes/login.tsx'),
-	route('logout', './routes/logout.tsx'),
+	route('login', './routes/auth/login.tsx'),
+	route('logout', './routes/auth/logout.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
 	route('users', './routes/users/users.tsx', [
 		index('./routes/users/home.tsx'),
