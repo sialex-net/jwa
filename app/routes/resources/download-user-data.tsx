@@ -72,7 +72,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 				image: userData?.[0].userImage
 					? {
 							...userData?.[0].userImage,
-							url: `${domain}/resources/user-images/${userData[0].userImage.id}`,
+							url: `${domain}/resources/user-avatar/${userData[0].userImage.id}`,
 						}
 					: null,
 			},
