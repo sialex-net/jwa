@@ -83,7 +83,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<div className="flex justify-center">
 				<div className="relative h-52 w-52">
 					<img
-						alt={loaderData.user.username ? loaderData.user.username : 'Avatar'}
+						alt={`Avatar for ${loaderData.user.username}`}
 						className="h-full w-full rounded-full object-cover"
 						src={getUserImgSrc(loaderData.user.image?.id)}
 					/>

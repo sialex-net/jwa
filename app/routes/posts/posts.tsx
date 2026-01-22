@@ -41,8 +41,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Component({ loaderData }: Route.ComponentProps) {
 	let user = useOptionalUser();
 	let isOwner = user?.id === loaderData.data.owner.ownerId;
-	let ownerDisplayName =
-		loaderData.data.owner.username ?? loaderData.data.owner.email;
+	let ownerDisplayName = loaderData.data.owner.username;
 	let navLinkDefaultClassName =
 		'line-clamp-2 block py-2 pr-6 pl-12 text-base lg:text-lg rounded-l-full';
 	return (

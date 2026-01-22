@@ -113,7 +113,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 	await db
 		.insert(schema.userImages)
 		.values({
-			altText: user.username ? `Avatar for ${user.username}` : 'Avatar',
+			altText: `Avatar for ${user.username}`,
 			blob: image.blob,
 			contentType: image.contentType,
 			id: user.id ?? nanoid(),
@@ -121,7 +121,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 		})
 		.onConflictDoUpdate({
 			set: {
-				altText: user.username ? `Avatar for ${user.username}` : 'Avatar',
+				altText: `Avatar for ${user.username}`,
 				blob: image.blob,
 				contentType: image.contentType,
 				id: nanoid(),
@@ -158,7 +158,7 @@ export default function Component({
 				{...form.props}
 			>
 				<img
-					alt={loaderData.user?.users.username ?? 'Avatar'}
+					alt={loaderData.user?.users.username}
 					className="h-52 w-52 rounded-full object-cover"
 					src={
 						newImageSrc ??

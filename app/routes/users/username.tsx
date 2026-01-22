@@ -42,7 +42,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function Component({ loaderData }: Route.ComponentProps) {
 	let { user } = loaderData.data;
-	let userDisplayName = user.username ?? user.email;
+	let userDisplayName = user.username;
 	let loggedInUser = useOptionalUser();
 	let isLoggedInUser = user.id === loggedInUser?.id;
 

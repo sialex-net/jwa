@@ -35,9 +35,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 				<ul>
 					{loaderData.data.query.map((user) => (
 						<li key={user.id}>
-							<Link to={`/users/${user.username}`}>
-								{user.username ?? user.email}
-							</Link>
+							<Link to={`/users/${user.username}`}>{user.username}</Link>
 						</li>
 					))}
 				</ul>
