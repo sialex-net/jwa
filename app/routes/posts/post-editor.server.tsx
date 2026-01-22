@@ -4,16 +4,14 @@ import { parseFormData } from '@remix-run/form-data-parser';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { nanoid } from 'nanoid';
-import { type ActionFunctionArgs, redirect } from 'react-router';
+import type { ActionFunctionArgs } from 'react-router';
+import { redirect } from 'react-router';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import * as schema from '@/data/drizzle/schema';
-import {
-	type ImageFieldset,
-	MAX_UPLOAD_SIZE,
-	PostEditorSchema,
-} from './post-editor';
+import type { ImageFieldset } from './post-editor';
+import { MAX_UPLOAD_SIZE, PostEditorSchema } from './post-editor';
 
 function imageHasFile(
 	image: ImageFieldset,
@@ -28,13 +26,15 @@ function imageHasId(
 }
 
 export async function action({ context, params, request }: ActionFunctionArgs) {
-	invariantResponse(params.username, 'username param is required');
-
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
-	invariantResponse(user.username === params.username, 'Not authorized', {
-		status: 403,
-	});
+	invariantResponse(
+		user.username === params.username,
+		'You do not have permission to access the requested resource',
+		{
+			status: 403,
+		},
+	);
 
 	let formData = await parseFormData(request, {
 		maxFileSize: MAX_UPLOAD_SIZE,
@@ -48,16 +48,16 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 	let superRefined = PostEditorSchema.superRefine(async (data, ctx) => {
 		if (!data.id) return;
 
-		let post = await db
-			.select({ id: schema.posts.id })
+		let query = await db
+			.select({ posts: { id: schema.posts.id } })
 			.from(schema.posts)
 			.where(eq(schema.posts.id, data.id))
 			.get();
 
-		if (!post) {
+		if (!query) {
 			ctx.addIssue({
 				code: 'custom',
-				message: 'Post not found',
+				message: `postId ${data.id} does not exist`,
 			});
 		}
 	}).transform(async ({ images = [], ...data }) => {
@@ -76,7 +76,6 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 								? `image/${i.file.name.split('.').pop()}`
 								: '',
 							id: i.id,
-							newId: nanoid(),
 						};
 					} else {
 						return {
@@ -117,9 +116,11 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 		};
 	}
 
-	invariantResponse(result.data.id, 'Post id not found', { status: 404 });
+	invariantResponse(result.data.id, `postId ${result.data.id} does not exist`, {
+		status: 404,
+	});
 
-	// insert if new post
+	// insert only if new post
 	await db
 		.insert(schema.posts)
 		.values({
@@ -130,26 +131,32 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 		})
 		.onConflictDoNothing();
 
-	let post = await db
+	let query = await db
 		.select({
-			content: schema.posts.content,
-			createdAt: schema.posts.createdAt,
-			id: schema.posts.id,
-			images: {
+			postImages: {
 				altText: sql<null | string>`${schema.postImages.altText}`,
 				id: schema.postImages.id,
 			},
-			owner: schema.users.username,
-			title: schema.posts.title,
+			posts: {
+				content: schema.posts.content,
+				createdAt: schema.posts.createdAt,
+				id: schema.posts.id,
+			},
+			users: {
+				title: schema.posts.title,
+				username: schema.users.username,
+			},
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, result.data.id))
 		.leftJoin(schema.users, eq(schema.posts.userId, schema.users.id))
 		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
 
-	let owner = post[0].owner;
+	let ownerUsername = query[0].users.username;
 
-	let postImages = post[0].images ? post.map((item) => item.images) : [];
+	let postImages = query[0].postImages
+		? query.map((item) => item.postImages)
+		: [];
 
 	let imageDeletionsIds = postImages
 		.filter((postImage) => postImage !== null)
@@ -179,14 +186,15 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 	// update images
 	await Promise.all(
 		result.data.imageUpdates.map((i) => {
-			if (i.newId) {
+			if (i.blob) {
 				return db
 					.update(schema.postImages)
 					.set({
 						altText: i.altText,
 						blob: i.blob,
 						contentType: i.contentType,
-						id: i.newId,
+						// new id for cache busting
+						id: nanoid(),
 					})
 					.where(eq(schema.postImages.id, i.id));
 			} else {
@@ -194,14 +202,13 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 					.update(schema.postImages)
 					.set({
 						altText: i.altText,
-						id: i.newId,
 					})
 					.where(eq(schema.postImages.id, i.id));
 			}
 		}),
 	);
 
-	// add images
+	// add new images
 	await Promise.all(
 		result.data.newImages.map((i) => {
 			return db.insert(schema.postImages).values({
@@ -213,5 +220,5 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 		}),
 	);
 
-	return redirect(`/users/${owner}/posts/${result.data.id}`);
+	return redirect(`/users/${ownerUsername}/posts/${result.data.id}`);
 }
