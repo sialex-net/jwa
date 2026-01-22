@@ -8,17 +8,26 @@ import { Button } from '@/app/components/ui/button';
 import { Icon } from '@/app/components/ui/icon';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
+import { Textarea } from '@/app/components/ui/textarea';
 import { cn } from '@/app/utils/cn';
 import { getPostImgSrc } from '@/app/utils/images';
 import type { Route } from './+types/edit-post';
 
 const titleMaxLength = 100;
-const contentMaxLength = 10000;
+const contentMaxLength = 10_000;
+const altTextMaxLength = 100;
 
 export const MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
 
 const ImageFieldsetSchema = z.object({
-	altText: z.string().optional(),
+	altText: z
+		.string({
+			error: (iss) => (iss.input === undefined ? 'Alt text is required' : null),
+		})
+		.max(altTextMaxLength, {
+			error: `Alt text cannot exceed ${altTextMaxLength} characters`,
+		})
+		.optional(),
 	file: z
 		.instanceof(File)
 		.optional()
@@ -35,7 +44,9 @@ export const PostEditorSchema = z.object({
 		.string({
 			error: (iss) => (iss.input === undefined ? 'Content is required' : null),
 		})
-		.max(contentMaxLength),
+		.max(contentMaxLength, {
+			error: `Content cannot exceed ${contentMaxLength} characters`,
+		}),
 	id: z.string().optional(),
 	images: z
 		.array(ImageFieldsetSchema)
@@ -45,7 +56,9 @@ export const PostEditorSchema = z.object({
 		.string({
 			error: (iss) => (iss.input === undefined ? 'Title is required' : null),
 		})
-		.max(titleMaxLength),
+		.max(titleMaxLength, {
+			error: `Title cannot exceed ${titleMaxLength} characters`,
+		}),
 });
 
 export function PostEditor({
@@ -57,7 +70,6 @@ export function PostEditor({
 }) {
 	let { form, fields, intent } = useForm(PostEditorSchema, {
 		defaultValue: post,
-		// Sync result of last submission
 		lastResult: actionData?.result,
 	});
 
@@ -87,8 +99,7 @@ export function PostEditor({
 						value={post.id}
 					/>
 				) : null}
-				<div>
-					<Label htmlFor={fields.title.id}>Title</Label>
+				<div className="relative">
 					<Input
 						aria-describedby={
 							!fields.title.valid
@@ -97,54 +108,73 @@ export function PostEditor({
 						}
 						aria-invalid={!fields.title.valid ? true : undefined}
 						autoFocus={true}
+						className="peer pt-7 leading-5"
 						defaultValue={fields.title.defaultValue}
 						id={fields.title.id}
 						name={fields.title.name}
 						type="text"
 					/>
+					<Label
+						className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
+						htmlFor={fields.title.id}
+					>
+						Title
+					</Label>
+					<div
+						aria-hidden={true}
+						className="sr-only"
+						id={fields.title.descriptionId}
+					>
+						Please enter a title
+					</div>
+					<div
+						aria-hidden={true}
+						className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs"
+						id={fields.title.errorId}
+					>
+						{fields.title.errors}
+					</div>
 				</div>
 				<div
 					aria-hidden={true}
-					className="sr-only"
-					id={fields.title.descriptionId}
+					aria-invalid={!fields.content.valid ? true : undefined}
+					className="relative rounded-md border border-gray-2 bg-gray-1/25 py-5 pt-7 has-focus-visible:border-primary-2 has-focus-visible:outline-hidden has-focus-visible:ring-2 has-focus-visible:ring-primary-7 has-focus-visible:ring-inset aria-[invalid]:border-destructive-5 aria-[invalid]:ring-destructive-5 aria-[invalid]:has-focus-visible:border-primary-2 aria-[invalid]:has-focus-visible:ring-2 aria-[invalid]:has-focus-visible:ring-inset"
 				>
-					Please enter a title
-				</div>
-				<div
-					aria-hidden={true}
-					id={fields.title.errorId}
-				>
-					{fields.title.errors}
-				</div>
-				<div>
-					<Label htmlFor={fields.content.id}>Content</Label>
-					<textarea
+					<Textarea
 						aria-describedby={
 							!fields.content.valid
 								? fields.content.errorId
 								: fields.content.descriptionId
 						}
 						aria-invalid={!fields.content.valid ? true : undefined}
+						className="peer scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 h-min-h-[3.75rem] leading-5 focus-visible:outline-hidden"
 						defaultValue={fields.content.defaultValue}
 						id={fields.content.id}
 						name={fields.content.name}
-					></textarea>
-				</div>
-				<div
-					aria-hidden={true}
-					className="sr-only"
-					id={fields.content.descriptionId}
-				>
-					Please enter some content
-				</div>
-				<div
-					aria-hidden={true}
-					id={fields.content.errorId}
-				>
-					{fields.content.errors}
+					/>
+					<Label
+						className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
+						htmlFor={fields.content.id}
+					>
+						Content
+					</Label>
+					<div
+						aria-hidden={true}
+						className="sr-only"
+						id={fields.content.descriptionId}
+					>
+						Please enter some content
+					</div>
+					<div
+						aria-hidden={true}
+						className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs"
+						id={fields.content.errorId}
+					>
+						{fields.content.errors}
+					</div>
 				</div>
 				<div>
-					<Label>Images</Label>
+					<Label className="text-gray-7">Images</Label>
 					<ul className="flex flex-col gap-y-4">
 						{imageList.map((imageMeta, index) => {
 							return (
@@ -274,20 +304,31 @@ function ImageChooser({ meta }: { meta: FieldMetadata<ImageFieldset> }) {
 						/>
 					</div>
 				</div>
-				<div className="flex-1">
-					<Label htmlFor={fields.altText.id}>Alt Text</Label>
-					<textarea
+				<div
+					aria-hidden={true}
+					aria-invalid={!fields.altText.valid ? true : undefined}
+					className="relative w-full rounded-md border border-gray-2 bg-gray-1/25 py-5 pt-7 has-focus-visible:border-primary-2 has-focus-visible:outline-hidden has-focus-visible:ring-2 has-focus-visible:ring-primary-7 has-focus-visible:ring-inset aria-[invalid]:border-destructive-5 aria-[invalid]:ring-destructive-5 aria-[invalid]:has-focus-visible:border-primary-2 aria-[invalid]:has-focus-visible:ring-2 aria-[invalid]:has-focus-visible:ring-inset"
+				>
+					<Textarea
+						className="peer scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 h-full leading-5 focus-visible:outline-hidden"
 						defaultValue={fields.altText.defaultValue}
 						id={fields.altText.id}
 						key={fields.altText.key}
 						name={fields.altText.name}
 						onChange={(e) => setAltText(e.currentTarget.value)}
 					/>
-					<div className="min-h-[32px] px-4 pt-1 pb-3">
-						<ErrorList
-							errors={fields.altText.errors}
-							id={fields.altText.errorId}
-						/>
+					<Label
+						className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
+						htmlFor={fields.altText.id}
+					>
+						Alt Text
+					</Label>
+					<div
+						aria-hidden={true}
+						className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs"
+						id={fields.altText.errorId}
+					>
+						{fields.altText.errors}
 					</div>
 				</div>
 			</div>
