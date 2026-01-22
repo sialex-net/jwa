@@ -96,7 +96,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 	});
 
 	return (
-		<div className="container flex flex-col items-center">
+		<main className="container flex flex-col items-center">
 			<Form
 				className="container mx-2 flex max-w-xl flex-col gap-y-2 pt-8"
 				method="POST"
@@ -235,7 +235,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					Sign Up
 				</Link>
 			</p>
-		</div>
+		</main>
 	);
 }
 
