@@ -5,7 +5,7 @@ import { blobAsArrayBuffer, id, timestamps } from './helpers';
 let users = t.sqliteTable('users', {
 	email: t.text('email').notNull().unique(),
 	id,
-	username: t.text('username'),
+	username: t.text('username').notNull().unique(),
 	...timestamps,
 });
 
