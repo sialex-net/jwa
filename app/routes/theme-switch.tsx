@@ -99,9 +99,10 @@ export function ThemeSwitch({
 
 	return (
 		<fetcher.Form
+			action="/theme-switch"
+			className="h-8"
 			method="POST"
 			{...form.props}
-			action="/theme-switch"
 		>
 			<RadioGroup
 				defaultValue={selectedValue}
