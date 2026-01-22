@@ -109,7 +109,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
-		.leftJoin(schema.userAvatar, eq(schema.userAvatar.userId, userId))
+		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.get();
 
 	invariantResponse(query, `userId ${userId} does not exist`, {
