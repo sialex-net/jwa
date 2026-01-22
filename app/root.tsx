@@ -98,7 +98,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App({ loaderData }: Route.ComponentProps) {
 	let user = useOptionalUser();
 	return (
-		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-stretch justify-between md:max-w-screen-xl">
+		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-center justify-between md:max-w-screen-xl">
 			<header className="container">
 				<nav className="flex items-center justify-between py-8">
 					<Link
@@ -149,7 +149,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
 				</nav>
 			</header>
 			<Outlet />
-			<footer className="flex justify-end gap-x-8 pr-8 pb-8 font-mono">
+			<footer className="container flex justify-end gap-x-8 pt-16 pr-8 pb-8 font-mono">
 				<ThemeSwitch userPreference={loaderData.requestInfo.userPrefs.theme} />
 			</footer>
 		</div>
