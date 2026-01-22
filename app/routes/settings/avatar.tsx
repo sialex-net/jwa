@@ -59,7 +59,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 	});
 
 	let client = connectClientCf();
-	let db = drizzle(client, { logger: true, schema });
+	let db = drizzle(client, { logger: false, schema });
 
 	let intent = formData.get('intent');
 	if (intent === 'delete') {
