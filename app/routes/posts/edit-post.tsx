@@ -1,6 +1,7 @@
 import { invariantResponse } from '@epic-web/invariant';
 import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
+import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
@@ -66,10 +67,14 @@ export default function Component({
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
 	return [
-		{ title: `Edit post: ${loaderData.data.post.title.slice(0, 21)}...` },
+		{ title: `Edit post: ${loaderData?.data.post.title.slice(0, 21)}...` },
 		{
-			content: loaderData.data.post.content ?? loaderData.data.post.title,
+			content: loaderData?.data.post.content ?? loaderData?.data.post.title,
 			name: 'description',
 		},
 	];
 };
+
+export function ErrorBoundary() {
+	return <GeneralErrorBoundary />;
+}
