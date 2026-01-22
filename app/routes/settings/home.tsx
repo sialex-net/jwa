@@ -29,21 +29,22 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let user = await db
+	let query = await db
 		.select({
-			email: schema.users.email,
-			id: schema.users.id,
-			image: schema.userAvatar,
-			username: schema.users.username,
+			userAvatar: { id: schema.userAvatar.id },
+			users: {
+				email: schema.users.email,
+				id: schema.users.id,
+				username: schema.users.username,
+			},
 		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.get();
 
-	invariantResponse(user, 'User not found', { status: 404 });
-
-	return { user };
+	invariantResponse(query, `userId ${userId} does not exist`, { status: 404 });
+	return { user: { avatar: { ...query.userAvatar }, ...query.users } };
 }
 
 type ProfileActionArgs = {
@@ -69,7 +70,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 			return profileUpdateAction({ formData, request, userId });
 		}
 		default: {
-			throw new Response(`Invalid intent "${intent}"`, { status: 400 });
+			throw new Response(`Invalid intent: ${intent}`, { status: 400 });
 		}
 	}
 }
@@ -82,7 +83,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					<img
 						alt={`Avatar for ${loaderData.user.username}`}
 						className="h-full w-full rounded-full object-cover"
-						src={getUserImgSrc(loaderData.user.image?.id)}
+						src={getUserImgSrc(loaderData.user.avatar?.id)}
 					/>
 					<Button
 						className="absolute top-3 -right-3 flex h-10 w-10 items-center justify-center rounded-full bg-blue-2 p-0"
