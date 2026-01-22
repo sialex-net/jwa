@@ -20,7 +20,7 @@ let posts = t.sqliteTable('posts', {
 	...timestamps,
 });
 
-let userImages = t.sqliteTable('user_images', {
+let userAvatar = t.sqliteTable('user_avatar', {
 	altText: t.text('alt_text').notNull(),
 	blob: blobAsArrayBuffer('blob'),
 	contentType: t.text('content_type'),
@@ -62,4 +62,4 @@ type SelectPostImage = typeof postImages.$inferSelect;
 
 export type { SelectPassword, SelectPost, SelectPostImage, SelectUser };
 
-export { passwords, postImages, posts, userImages, users };
+export { passwords, postImages, posts, userAvatar, users };
