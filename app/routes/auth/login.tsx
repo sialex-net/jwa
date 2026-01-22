@@ -88,10 +88,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 
 	let { form, fields } = useForm(LoginSchema, {
 		defaultValue: {
-			email: '',
-			password: '',
 			redirectTo,
-			remember: false,
 		},
 		// Sync result of last submission
 		lastResult: actionData?.result,
