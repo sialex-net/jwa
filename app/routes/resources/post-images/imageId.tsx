@@ -6,27 +6,39 @@ import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/imageId';
 
 export async function loader({ params }: Route.LoaderArgs) {
-	invariantResponse(params.imageId, 'Image ID is required', { status: 400 });
+	invariantResponse(params.imageId, 'imageId url parameter is required', {
+		status: 400,
+	});
 
 	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
-	let image = await db
-		.select()
+	let query = await db
+		.select({
+			postImages: {
+				blob: schema.postImages.blob,
+				contentType: schema.postImages.contentType,
+				id: schema.postImages.id,
+			},
+		})
 		.from(schema.postImages)
 		.where(eq(schema.postImages.id, params.imageId))
 		.get();
 
 	client.close();
 
-	invariantResponse(image, 'Not found', { status: 404 });
+	invariantResponse(query, `imageId ${params.imageId} does not exist`, {
+		status: 404,
+	});
 
-	return new Response(image.blob, {
+	let { blob, contentType, id } = query.postImages;
+
+	return new Response(blob, {
 		headers: {
 			'cache-control': 'public, max-age=31536000, immutable',
-			'content-disposition': `inline; filename="${params.imageId}"`,
-			'content-length': image.blob?.byteLength.toString() ?? '',
-			'content-type': image.contentType || '',
+			'content-disposition': `inline; filename="${id}"`,
+			'content-length': blob?.byteLength.toString() ?? '',
+			'content-type': contentType || '',
 		},
 	});
 }
