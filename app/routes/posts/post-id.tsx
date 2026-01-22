@@ -20,15 +20,17 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	let query = await db
 		.select({
-			content: schema.posts.content,
-			createdAt: schema.posts.createdAt,
-			id: schema.posts.id,
-			images: {
+			postImages: {
 				altText: sql<null | string>`${schema.postImages.altText}`,
 				id: schema.postImages.id,
 			},
-			ownerId: schema.posts.userId,
-			title: schema.posts.title,
+			posts: {
+				content: schema.posts.content,
+				createdAt: schema.posts.createdAt,
+				id: schema.posts.id,
+				title: schema.posts.title,
+			},
+			users: { id: schema.posts.userId },
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, params.postId))
@@ -36,20 +38,15 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(
-		query.length > 0,
-		`postId ${params.postId} does not exist`,
-		{
-			status: 404,
-		},
-	);
+	invariantResponse(query.length, `postId ${params.postId} does not exist`, {
+		status: 404,
+	});
 
 	return {
-		data: {
-			post: {
-				...query[0],
-				images: query[0].images ? query.map((item) => item.images) : [],
-			},
+		post: {
+			images: query[0].postImages ? query.map((item) => item.postImages) : [],
+			...query[0].posts,
+			owner: { ...query[0].users },
 		},
 	};
 }
@@ -59,7 +56,7 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 	let user = await requireUser(env, request);
 	invariantResponse(
 		user.username === params.username,
-		'You do not have permission',
+		'You do not have permission to access the requested resource',
 		{
 			status: 403,
 		},
@@ -79,16 +76,16 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 
 export default function Component({ loaderData }: Route.ComponentProps) {
 	let user = useOptionalUser();
-	let isOwner = user?.id === loaderData.data.post.ownerId;
+	let isOwner = user?.id === loaderData.post.owner.id;
 
 	return (
 		<div className="absolute inset-0 flex flex-col px-10">
 			<h2 className="mb-2 pt-12 font-semibold text-3xl lg:mb-6">
-				{loaderData.data.post.title}
+				{loaderData.post.title}
 			</h2>
 			<div className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto pb-24">
 				<ul className="flex flex-wrap gap-5 py-5">
-					{loaderData.data.post.images.map((image) =>
+					{loaderData.post.images.map((image) =>
 						image ? (
 							<li key={image.id}>
 								<a href={getPostImgSrc(image.id)}>
@@ -105,7 +102,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					)}
 				</ul>
 				<p className="whitespace-break-spaces text-sm md:text-lg">
-					{loaderData.data.post.content}
+					{loaderData.post.content}
 				</p>
 			</div>
 			{isOwner ? (
@@ -141,11 +138,11 @@ export const meta: Route.MetaFunction = ({ loaderData, params, matches }) => {
 		| undefined
 		| { data: PostsRoute.ComponentProps['loaderData'] };
 
-	let displayName = postsMatch?.data.data.owner.username ?? params.username;
-	let postTitle = loaderData?.data.post.title ?? 'Post';
+	let displayName = postsMatch?.data.owner.username ?? params.username;
+	let postTitle = loaderData?.post.title ?? 'Post';
 	let postContentsSummary =
-		loaderData?.data.post.content && loaderData?.data.post.content.length > 100
-			? `${loaderData?.data.post.content.slice(0, 97)}...`
+		loaderData?.post.content && loaderData?.post.content.length > 100
+			? `${loaderData?.post.content.slice(0, 97)}...`
 			: 'No content';
 	return [
 		{ title: `${postTitle} | ${displayName}'s Posts | John Wicki` },
