@@ -122,8 +122,7 @@ export function useOptimisticThemeMode() {
 	let fetchers = useFetchers();
 	let themeFetcher = fetchers.find((f) => f.formAction === '/theme-switch');
 
-	// biome-ignore lint/complexity/useOptionalChain: .
-	if (themeFetcher && themeFetcher.formData) {
+	if (themeFetcher?.formData) {
 		let submission = parseSubmission(themeFetcher.formData);
 		let result = ThemeFormSchema.safeParse(submission.payload);
 
