@@ -37,18 +37,25 @@ const AvatarFormSchema = z.object({
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
+
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let user = await db
-		.select()
+	let query = await db
+		.select({
+			userAvatar: { id: schema.userAvatar.id },
+			users: { username: schema.users.username },
+		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.get();
 
-	invariantResponse(user, 'User not found', { status: 404 });
-	return { user };
+	invariantResponse(query, `userId ${userId} does not exist`, {
+		status: 404,
+	});
+
+	return { user: { avatar: { ...query.userAvatar }, ...query.users } };
 }
 
 export async function action({ context, request }: Route.ActionArgs) {
@@ -95,32 +102,34 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { image } = result.data;
 
-	let user = await db
-		.select({ id: schema.userAvatar.id, username: schema.users.username })
+	let query = await db
+		.select({
+			userAvatar: { id: schema.userAvatar.id },
+			users: { username: schema.users.username },
+		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
 		.leftJoin(schema.userAvatar, eq(schema.userAvatar.userId, userId))
 		.get();
 
-	invariantResponse(user, 'User not found', { status: 404 });
+	invariantResponse(query, `userId ${userId} does not exist`, {
+		status: 404,
+	});
+
+	let avatar = {
+		altText: `Avatar for ${query.users.username}`,
+		blob: image.blob,
+		contentType: image.contentType,
+		id: query.userAvatar?.id ?? nanoid(),
+		userId,
+	};
 
 	await db
 		.insert(schema.userAvatar)
-		.values({
-			altText: `Avatar for ${user.username}`,
-			blob: image.blob,
-			contentType: image.contentType,
-			id: user.id ?? nanoid(),
-			userId,
-		})
+		.values(avatar)
 		.onConflictDoUpdate({
-			set: {
-				altText: `Avatar for ${user.username}`,
-				blob: image.blob,
-				contentType: image.contentType,
-				id: nanoid(),
-				userId,
-			},
+			// new id for cache busting
+			set: { ...avatar, id: nanoid() },
 			target: schema.userAvatar.id,
 		});
 
@@ -152,13 +161,11 @@ export default function Component({
 				{...form.props}
 			>
 				<img
-					alt={loaderData.user?.users.username}
+					alt={loaderData.user?.username}
 					className="h-52 w-52 rounded-full object-cover"
 					src={
 						newImageSrc ??
-						(loaderData.user
-							? getUserImgSrc(loaderData.user.user_avatar?.id)
-							: '')
+						(loaderData.user ? getUserImgSrc(loaderData.user.avatar?.id) : '')
 					}
 				/>
 				<ErrorList
@@ -220,7 +227,7 @@ export default function Component({
 								</Button>
 							)}
 						</ServerOnly>
-						{loaderData.user.user_avatar?.id ? (
+						{loaderData.user.avatar?.id ? (
 							<Button
 								name="intent"
 								type="submit"
