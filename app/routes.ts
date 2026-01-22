@@ -25,7 +25,7 @@ export default [
 		route('avatar', './routes/settings/avatar.tsx'),
 	]),
 	...prefix('resources', [
-		route('user-images/:imageId', './routes/resources/user-images/imageId.tsx'),
+		route('user-avatar/:imageId', './routes/resources/user-avatar/imageId.tsx'),
 		route('post-images/:imageId', './routes/resources/post-images/imageId.tsx'),
 		route('download-user-data', './routes/resources/download-user-data.tsx'),
 	]),
