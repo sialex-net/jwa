@@ -1,5 +1,5 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { Form, Link, redirect, useSearchParams } from 'react-router';
+import { data, Form, Link, redirect, useSearchParams } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
@@ -55,14 +55,23 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let result = await transformed.safeParseAsync(submission.payload);
 
 	if (!result.success) {
-		return {
-			result: report(submission, {
-				error: {
-					issues: result.error.issues,
-				},
-				hideFields: ['password'],
-			}),
-		};
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+					hideFields: ['password'],
+				}),
+			},
+			{
+				status: result.error?.issues.some(
+					(item) => item.message === 'Invalid username or password',
+				)
+					? 401
+					: 400,
+			},
+		);
 	}
 
 	let { redirectTo, remember, user } = result.data;

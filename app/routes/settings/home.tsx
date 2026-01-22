@@ -2,7 +2,7 @@ import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { invariantResponse } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { Link, redirect, useFetcher, useLoaderData } from 'react-router';
+import { data, Link, redirect, useFetcher, useLoaderData } from 'react-router';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
 import { Button } from '@/app/components/ui/button';
@@ -166,13 +166,16 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 	let result = await superRefined.safeParseAsync(submission.payload);
 
 	if (!result.success) {
-		return {
-			result: report(submission, {
-				error: {
-					issues: result.error.issues,
-				},
-			}),
-		};
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+				}),
+			},
+			{ status: 400 },
+		);
 	}
 
 	await db

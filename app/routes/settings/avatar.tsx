@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { nanoid } from 'nanoid';
 import * as React from 'react';
-import { Form, redirect } from 'react-router';
+import { data, Form, redirect } from 'react-router';
 import { ServerOnly } from 'remix-utils/server-only';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
@@ -91,13 +91,16 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let result = await transformed.safeParseAsync(submission.payload);
 
 	if (!result.success) {
-		return {
-			result: report(submission, {
-				error: {
-					issues: result.error.issues,
-				},
-			}),
-		};
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+				}),
+			},
+			{ status: 400 },
+		);
 	}
 
 	let { image } = result.data;

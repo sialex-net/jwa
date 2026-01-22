@@ -1,7 +1,7 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { Form, Link, redirect } from 'react-router';
+import { data, Form, Link, redirect } from 'react-router';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
 import { Button } from '@/app/components/ui/button';
@@ -63,14 +63,17 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let result = await superRefined.safeParseAsync(submission.payload);
 
 	if (!result.success) {
-		return {
-			result: report(submission, {
-				error: {
-					issues: result.error.issues,
-				},
-				hideFields: ['currentPassword', 'newPassword', 'password'],
-			}),
-		};
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+					hideFields: ['currentPassword', 'newPassword', 'password'],
+				}),
+			},
+			{ status: 400 },
+		);
 	}
 
 	let { newPassword } = result.data;
