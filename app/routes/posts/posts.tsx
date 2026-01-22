@@ -63,7 +63,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 							</h1>
 						</Link>
 						{isOwner ? (
-							<li className="p-1 pr-0">
+							<div className="p-1 pr-0">
 								<NavLink
 									className={({ isActive }) =>
 										cn(navLinkDefaultClassName, isActive && 'bg-accent')
@@ -72,7 +72,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 								>
 									<Icon name="plus">New Post</Icon>
 								</NavLink>
-							</li>
+							</div>
 						) : null}
 						{loaderData.data.owner.posts.length > 0 ? (
 							<ul className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-7 overflow-y-auto overflow-x-hidden pb-12">
