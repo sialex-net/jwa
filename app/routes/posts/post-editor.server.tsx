@@ -5,7 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { nanoid } from 'nanoid';
 import type { ActionFunctionArgs } from 'react-router';
-import { redirect } from 'react-router';
+import { data, redirect } from 'react-router';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
@@ -107,13 +107,16 @@ export async function action({ context, params, request }: ActionFunctionArgs) {
 	let result = await superRefined.safeParseAsync(submission.payload);
 
 	if (!result.success) {
-		return {
-			result: report(submission, {
-				error: {
-					issues: result.error.issues,
-				},
-			}),
-		};
+		return data(
+			{
+				result: report(submission, {
+					error: {
+						issues: result.error.issues,
+					},
+				}),
+			},
+			{ status: 400 },
+		);
 	}
 
 	invariantResponse(result.data.id, `postId ${result.data.id} does not exist`, {
