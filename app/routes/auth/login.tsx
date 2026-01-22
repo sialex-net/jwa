@@ -90,6 +90,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 		defaultValue: {
 			redirectTo,
 		},
+		id: 'login-form',
 		// Sync result of last submission
 		lastResult: actionData?.result,
 	});
