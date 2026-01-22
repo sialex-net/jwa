@@ -16,7 +16,7 @@ export function ErrorList({
 		>
 			{errorsToRender.map((e) => (
 				<li
-					className="text-[10px] text-foreground-destructive"
+					className="text-xs"
 					key={e}
 				>
 					{e}
