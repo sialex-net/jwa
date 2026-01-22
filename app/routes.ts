@@ -20,6 +20,7 @@ export default [
 	]),
 	route('settings', './routes/settings/settings.tsx', [
 		index('./routes/settings/home.tsx'),
+		route('password', './routes/settings/password.tsx'),
 	]),
 	...prefix('resources', [
 		route('user-images/:imageId', './routes/resources/user-images/imageId.tsx'),
