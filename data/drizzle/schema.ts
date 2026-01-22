@@ -21,7 +21,7 @@ let posts = t.sqliteTable('posts', {
 });
 
 let userImages = t.sqliteTable('user_images', {
-	altText: t.text('alt_text'),
+	altText: t.text('alt_text').notNull(),
 	blob: blobAsArrayBuffer('blob'),
 	contentType: t.text('content_type'),
 	id,
