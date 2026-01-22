@@ -9,9 +9,17 @@ const [libsqlMiddleware, getClientFromContext] = createSingletonMiddleware({
 	},
 });
 
-export function getClientCf() {
+function getClientCf() {
 	let context = getContext();
 	return getClientFromContext(context);
+}
+
+export function connectClientCf() {
+	let client = getClientCf();
+	if (client.closed) {
+		client.reconnect();
+	}
+	return client;
 }
 
 export { libsqlMiddleware };
