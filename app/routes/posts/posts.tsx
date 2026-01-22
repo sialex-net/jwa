@@ -18,7 +18,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 		.select()
 		.from(schema.users)
 		.where(eq(schema.users.username, params.username))
-		.leftJoin(schema.userImages, eq(schema.users.id, schema.userImages.userId))
+		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.leftJoin(schema.posts, eq(schema.users.id, schema.posts.userId));
 
 	client.close();
@@ -29,7 +29,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 		data: {
 			owner: {
 				email: query[0].users.email,
-				image: query[0].user_images?.id,
+				image: query[0].user_avatar?.id,
 				ownerId: query[0].users.id,
 				posts: query[0].posts ? query.map((item) => item.posts) : [],
 				username: query[0].users.username,

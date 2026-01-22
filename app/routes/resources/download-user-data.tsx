@@ -15,8 +15,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let { blob: _userImagesBlob, ...userImagesColumnsWithoutBlob } =
-		getTableColumns(schema.userImages);
+	let { blob: _userAvatarBlob, ...userAvatarColumnsWithoutBlob } =
+		getTableColumns(schema.userAvatar);
 
 	let { blob: _postImagesBlob, ...postImagesColumnsWithoutBlob } =
 		getTableColumns(schema.postImages);
@@ -26,11 +26,11 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			post: schema.posts,
 			postImages: postImagesColumnsWithoutBlob,
 			user: schema.users,
-			userImage: userImagesColumnsWithoutBlob,
+			userImage: userAvatarColumnsWithoutBlob,
 		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
-		.leftJoin(schema.userImages, eq(schema.users.id, schema.userImages.userId))
+		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.leftJoin(schema.posts, eq(schema.users.id, schema.posts.userId))
 		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
 

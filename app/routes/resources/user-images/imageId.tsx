@@ -13,8 +13,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	let image = await db
 		.select()
-		.from(schema.userImages)
-		.where(eq(schema.userImages.id, params.imageId))
+		.from(schema.userAvatar)
+		.where(eq(schema.userAvatar.id, params.imageId))
 		.get();
 
 	client.close();

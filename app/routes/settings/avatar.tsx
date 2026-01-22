@@ -44,7 +44,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.select()
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
-		.leftJoin(schema.userImages, eq(schema.users.id, schema.userImages.userId))
+		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.get();
 
 	invariantResponse(user, 'User not found', { status: 404 });
@@ -64,8 +64,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let intent = formData.get('intent');
 	if (intent === 'delete') {
 		await db
-			.delete(schema.userImages)
-			.where(eq(schema.userImages.userId, userId));
+			.delete(schema.userAvatar)
+			.where(eq(schema.userAvatar.userId, userId));
 		return redirect('/settings');
 	}
 
@@ -96,16 +96,16 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let { image } = result.data;
 
 	let user = await db
-		.select({ id: schema.userImages.id, username: schema.users.username })
+		.select({ id: schema.userAvatar.id, username: schema.users.username })
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
-		.leftJoin(schema.userImages, eq(schema.userImages.userId, userId))
+		.leftJoin(schema.userAvatar, eq(schema.userAvatar.userId, userId))
 		.get();
 
 	invariantResponse(user, 'User not found', { status: 404 });
 
 	await db
-		.insert(schema.userImages)
+		.insert(schema.userAvatar)
 		.values({
 			altText: `Avatar for ${user.username}`,
 			blob: image.blob,
@@ -121,7 +121,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 				id: nanoid(),
 				userId,
 			},
-			target: schema.userImages.id,
+			target: schema.userAvatar.id,
 		});
 
 	return redirect('/settings');
@@ -157,7 +157,7 @@ export default function Component({
 					src={
 						newImageSrc ??
 						(loaderData.user
-							? getUserImgSrc(loaderData.user.user_images?.id)
+							? getUserImgSrc(loaderData.user.user_avatar?.id)
 							: '')
 					}
 				/>
@@ -220,7 +220,7 @@ export default function Component({
 								</Button>
 							)}
 						</ServerOnly>
-						{loaderData.user.user_images?.id ? (
+						{loaderData.user.user_avatar?.id ? (
 							<Button
 								name="intent"
 								type="submit"

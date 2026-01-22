@@ -33,12 +33,12 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.select({
 			email: schema.users.email,
 			id: schema.users.id,
-			image: schema.userImages,
+			image: schema.userAvatar,
 			username: schema.users.username,
 		})
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
-		.leftJoin(schema.userImages, eq(schema.users.id, schema.userImages.userId))
+		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.get();
 
 	invariantResponse(user, 'User not found', { status: 404 });
