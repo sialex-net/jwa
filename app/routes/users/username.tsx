@@ -17,7 +17,14 @@ export async function loader({ params }: Route.LoaderArgs) {
 	let db = drizzle(client, { logger: false, schema });
 
 	let query = await db
-		.select()
+		.select({
+			userAvatar: { id: schema.userAvatar.id },
+			users: {
+				createdAt: schema.users.createdAt,
+				id: schema.users.id,
+				username: schema.users.username,
+			},
+		})
 		.from(schema.users)
 		.where(eq(schema.users.username, params.username))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
@@ -25,23 +32,20 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(query, 'User not found', { status: 404 });
+	invariantResponse(query, `username ${params.username} does not exist`, {
+		status: 404,
+	});
 
 	return {
-		data: {
-			user: {
-				email: query.users.email,
-				id: query.users.id,
-				image: query.user_avatar?.id,
-				joined: query.users.createdAt,
-				username: query.users.username,
-			},
+		user: {
+			avatar: query.userAvatar,
+			...query.users,
 		},
 	};
 }
 
 export default function Component({ loaderData }: Route.ComponentProps) {
-	let { user } = loaderData.data;
+	let { user } = loaderData;
 	let userDisplayName = user.username;
 	let loggedInUser = useOptionalUser();
 	let isLoggedInUser = user.id === loggedInUser?.id;
@@ -57,7 +61,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 								<img
 									alt={userDisplayName}
 									className="h-52 w-52 rounded-full object-cover"
-									src={getUserImgSrc(user.image)}
+									src={getUserImgSrc(user.avatar?.id)}
 								/>
 							</div>
 						</div>
@@ -70,7 +74,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 							<h1 className="text-center text-h2">{userDisplayName}</h1>
 						</div>
 						<p className="mt-2 text-center text-muted-foreground">
-							Joined {user.joined.toLocaleDateString('en-GB')}
+							Joined {user.createdAt.toLocaleDateString('en-GB')}
 						</p>
 						{isLoggedInUser ? (
 							<Form
@@ -140,7 +144,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData, params }) => {
-	let displayName = loaderData?.data.user.username ?? params.username;
+	let displayName = loaderData?.user.username ?? params.username;
 	return [
 		{ title: `${displayName} | John Wicki` },
 		/* biome-ignore-start assist/source/useSortedKeys: .*/
@@ -153,13 +157,5 @@ export const meta: Route.MetaFunction = ({ loaderData, params }) => {
 };
 
 export function ErrorBoundary() {
-	return (
-		<GeneralErrorBoundary
-			statusHandlers={{
-				404: ({ params }) => (
-					<p>No user with the username "{params.username}" exists</p>
-				),
-			}}
-		/>
-	);
+	return <GeneralErrorBoundary />;
 }
