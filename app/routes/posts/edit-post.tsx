@@ -14,9 +14,13 @@ export { action } from './post-editor.server';
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
-	invariantResponse(user.username === params.username, 'Not authorized', {
-		status: 403,
-	});
+	invariantResponse(
+		user.username === params.username,
+		'You do not have permission to access the requested resource',
+		{
+			status: 403,
+		},
+	);
 
 	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
@@ -38,7 +42,13 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 
 	client.close();
 
-	invariantResponse(query, 'Post not found', { status: 404 });
+	invariantResponse(
+		query.length > 0,
+		`postId ${params.postId} does not exist`,
+		{
+			status: 404,
+		},
+	);
 
 	return {
 		data: {
