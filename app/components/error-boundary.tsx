@@ -14,9 +14,12 @@ type StatusHandler = (info: {
 
 export function GeneralErrorBoundary({
 	defaultStatusHandler = ({ error }) => (
-		<p>
-			{error.status} {error.data}
-		</p>
+		<div className="flex flex-col gap-y-4">
+			<p>
+				{error.status}: {error.statusText}
+			</p>
+			<p>{error.data}</p>
+		</div>
 	),
 	statusHandlers,
 	unexpectedErrorHandler = (error) => <p>{getErrorMessage(error)}</p>,
