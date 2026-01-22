@@ -7,9 +7,13 @@ import { PostEditor } from './post-editor';
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
-	invariantResponse(user.username === params.username, 'Not authorized', {
-		status: 403,
-	});
+	invariantResponse(
+		user.username === params.username,
+		'You do not have permission to access the requested resource',
+		{
+			status: 403,
+		},
+	);
 	return {};
 }
 
