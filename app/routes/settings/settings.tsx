@@ -24,15 +24,16 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let user = await db
-		.select()
+	let query = await db
+		.select({ users: { id: schema.users.id } })
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
 		.get();
 
-	invariantResponse(user, 'User not found', { status: 404 });
+	invariantResponse(query, `userId ${userId} does not exist`, { status: 404 });
 	return {};
 }
+
 let BreadcrumbHandleMatch = z.object({
 	handle: z.object({ breadcrumb: z.any() }),
 });
