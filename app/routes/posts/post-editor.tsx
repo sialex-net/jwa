@@ -136,7 +136,6 @@ export function PostEditor({
 					</div>
 				</div>
 				<div
-					aria-hidden={true}
 					aria-invalid={!fields.content.valid ? true : undefined}
 					className="relative rounded-md border border-gray-2 bg-gray-1/25 py-5 pt-7 has-focus-visible:border-primary-2 has-focus-visible:outline-hidden has-focus-visible:ring-2 has-focus-visible:ring-primary-7 has-focus-visible:ring-inset aria-[invalid]:border-destructive-5 aria-[invalid]:ring-destructive-5 aria-[invalid]:has-focus-visible:border-primary-2 aria-[invalid]:has-focus-visible:ring-2 aria-[invalid]:has-focus-visible:ring-inset"
 				>
@@ -305,7 +304,6 @@ function ImageChooser({ meta }: { meta: FieldMetadata<ImageFieldset> }) {
 					</div>
 				</div>
 				<div
-					aria-hidden={true}
 					aria-invalid={!fields.altText.valid ? true : undefined}
 					className="relative w-full rounded-md border border-gray-2 bg-gray-1/25 py-5 pt-7 has-focus-visible:border-primary-2 has-focus-visible:outline-hidden has-focus-visible:ring-2 has-focus-visible:ring-primary-7 has-focus-visible:ring-inset aria-[invalid]:border-destructive-5 aria-[invalid]:ring-destructive-5 aria-[invalid]:has-focus-visible:border-primary-2 aria-[invalid]:has-focus-visible:ring-2 aria-[invalid]:has-focus-visible:ring-inset"
 				>
