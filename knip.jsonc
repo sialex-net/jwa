@@ -9,6 +9,7 @@
 	"ignoreBinaries": ["turso"],
 	"ignoreDependencies": [
 		"cloudflare",
+		"execa",
 		"node-addon-api",
 		"node-gyp",
 		"tailwindcss",
