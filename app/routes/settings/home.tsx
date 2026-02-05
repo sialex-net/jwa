@@ -1,6 +1,6 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { invariantResponse } from '@epic-web/invariant';
-import { eq } from 'drizzle-orm';
+import { and, eq, not } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { data, Link, redirect, useFetcher, useLoaderData } from 'react-router';
 import { z } from 'zod';
@@ -11,8 +11,9 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
-import { requireUserId } from '@/app/utils/auth.server';
+import { requireUserId, sessionKey } from '@/app/utils/auth.server';
 import { getUserImgSrc } from '@/app/utils/images';
+import { getSessionStorage } from '@/app/utils/sessions.server';
 import { EmailSchema, UsernameSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/home';
@@ -31,6 +32,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
 	let query = await db
 		.select({
+			sessions: { id: schema.sessions.id },
 			userAvatar: { id: schema.userAvatar.id },
 			users: {
 				email: schema.users.email,
@@ -41,19 +43,27 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.from(schema.users)
 		.where(eq(schema.users.id, userId))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
-		.get();
+		.innerJoin(schema.sessions, eq(schema.users.id, schema.sessions.userId));
 
 	invariantResponse(query, `userId ${userId} does not exist`, { status: 404 });
-	return { user: { avatar: { ...query.userAvatar }, ...query.users } };
+	return {
+		user: {
+			avatar: { ...query[0].userAvatar },
+			...query[0].users,
+			sessionsCount: query.length,
+		},
+	};
 }
 
 type ProfileActionArgs = {
+	env?: Env;
 	formData: FormData;
 	request: Request;
 	userId: string;
 };
-const profileUpdateActionIntent = 'update-profile';
 const deleteDataActionIntent = 'delete-data';
+const profileUpdateActionIntent = 'update-profile';
+const signOutOfSessionsActionIntent = 'sign-out-of-sessions';
 
 export async function action({ context, request }: Route.ActionArgs) {
 	let { env } = getContext(context, appContext);
@@ -68,6 +78,9 @@ export async function action({ context, request }: Route.ActionArgs) {
 		}
 		case profileUpdateActionIntent: {
 			return profileUpdateAction({ formData, request, userId });
+		}
+		case signOutOfSessionsActionIntent: {
+			return signOutOfSessionsAction({ env, formData, request, userId });
 		}
 		default: {
 			throw new Response(`Invalid intent: ${intent}`, { status: 400 });
@@ -122,6 +135,7 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 						<Icon name="download">Download your data</Icon>
 					</a>
 				</div>
+				<SignOutOfSessions />
 				<DeleteData />
 			</div>
 		</div>
@@ -293,6 +307,64 @@ function UpdateProfile() {
 				</Button>
 			</div>
 		</fetcher.Form>
+	);
+}
+
+async function signOutOfSessionsAction({
+	env,
+	request,
+	userId,
+}: ProfileActionArgs) {
+	invariantResponse(env, 'env is required');
+
+	let cookieSession = await getSessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+
+	let sessionId = cookieSession.get(sessionKey);
+	invariantResponse(
+		sessionId,
+		'You must be authenticated to sign out of other sessions',
+	);
+
+	let client = connectClientCf();
+	let db = drizzle(client, { logger: false, schema });
+
+	await db
+		.delete(schema.sessions)
+		.where(
+			and(
+				not(eq(schema.sessions.id, sessionId)),
+				eq(schema.sessions.userId, userId),
+			),
+		);
+
+	return { status: 'success' };
+}
+
+function SignOutOfSessions() {
+	const data = useLoaderData<typeof loader>();
+
+	const fetcher = useFetcher<typeof signOutOfSessionsAction>();
+	const otherSessionsCount = data.user.sessionsCount - 1;
+	return (
+		<div>
+			{otherSessionsCount ? (
+				<fetcher.Form method="POST">
+					<Button
+						name="intent"
+						type="submit"
+						value={signOutOfSessionsActionIntent}
+					>
+						<Icon name="avatar">
+							{`Sign out of ${otherSessionsCount} other sessions`}
+						</Icon>
+					</Button>
+				</fetcher.Form>
+			) : (
+				<Icon name="avatar">This is your only session</Icon>
+			)}
+		</div>
 	);
 }
 
