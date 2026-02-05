@@ -22,7 +22,7 @@ import { ThemeSwitch, useOptionalTheme } from './routes/theme-switch';
 import { getUserId } from './utils/auth.server';
 import { ClientHintCheck, getHints } from './utils/client-hints';
 import { getTheme } from './utils/theme.server';
-import { useOptionalUser } from './utils/user';
+import { useOptionalUser, userHasRole } from './utils/user';
 
 export const middleware = [contextStorageMiddleware, libsqlMiddleware];
 
@@ -152,6 +152,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App({ loaderData }: Route.ComponentProps) {
 	let user = useOptionalUser();
+	let userIsAdmin = userHasRole(user, 'admin');
 	return (
 		<div className="mx-auto flex h-lvh max-w-screen-sm flex-col items-center justify-between md:max-w-screen-xl">
 			<header className="container">
@@ -173,16 +174,30 @@ export default function App({ loaderData }: Route.ComponentProps) {
 						</li>
 						<li>
 							{user ? (
-								<Button
-									render={(props) => (
-										<Link
-											to={`/users/${user.username}`}
-											{...props}
-										>
-											Profile
-										</Link>
-									)}
-								/>
+								<div className="flex items-center gap-x-8">
+									<Button
+										render={(props) => (
+											<Link
+												to={`/users/${user.username}`}
+												{...props}
+											>
+												Profile
+											</Link>
+										)}
+									/>
+									{userIsAdmin ? (
+										<Button
+											render={(props) => (
+												<Link
+													to="/admin"
+													{...props}
+												>
+													Admin
+												</Link>
+											)}
+										/>
+									) : null}
+								</div>
 							) : (
 								<Button
 									render={(props) => (
