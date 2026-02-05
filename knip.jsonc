@@ -15,6 +15,6 @@
 		"tailwindcss",
 		"tailwind-scrollbar"
 	],
-	"ignoreFiles": ["worktrees/**"],
+	"ignoreFiles": ["worktrees/**", "data/seedRolesPermissions.ts"],
 	"project": ["**/*.{mjs,ts,tsx}"]
 }
