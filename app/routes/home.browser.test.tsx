@@ -1,22 +1,28 @@
 import { describe, expect, test } from 'vitest';
 import { default as routeDefault } from './home';
 
+const routeComponentProps = {
+	loaderData: undefined,
+	// biome-ignore lint/suspicious/noExplicitAny: .
+	matches: [] as any,
+	params: {},
+};
+
 describe('home route', () => {
-	// biome-ignore lint/suspicious/noTsIgnore: it exists
-	// @ts-ignore: Property 'renderStub' does not exist on type 'TestContext'
 	test('should render page text', async ({ renderStub }) => {
-		let rendered = await renderStub({
+		const rendered = await renderStub({
 			entries: [
 				{
-					// @ts-expect-error
-					Component: () => routeDefault(),
+					Component: () => routeDefault(routeComponentProps),
 					path: '/',
 				},
 			],
 			props: { initialEntries: ['/'] },
 		});
 
-		let actual = rendered.getByText('john wicki').element().textContent;
-		expect(actual).toMatch(/john/);
+		const getByText = rendered.getByText('john wicki', {
+			exact: true,
+		});
+		expect(getByText).toHaveTextContent('john');
 	});
 });
