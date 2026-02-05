@@ -53,6 +53,56 @@ let passwords = t.sqliteTable('passwords', {
 		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
 });
 
+let roles = t.sqliteTable('roles', {
+	description: t.text('description').default(''),
+	id,
+	name: t.text('name').notNull().unique(),
+	...timestamps,
+});
+
+let permissions = t.sqliteTable(
+	'permissions',
+	{
+		access: t.text('access').notNull(),
+		action: t.text('action').notNull(),
+		description: t.text('description').default(''),
+		entity: t.text('entity').notNull(),
+		id,
+		...timestamps,
+	},
+	(table) => [t.unique().on(table.access, table.action, table.entity)],
+);
+
+let usersToRoles = t.sqliteTable(
+	'users_to_roles',
+	{
+		roleId: t
+			.text('role_id')
+			.notNull()
+			.references(() => roles.id),
+		userId: t
+			.text('user_id')
+			.notNull()
+			.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
+	},
+	(table) => [t.primaryKey({ columns: [table.userId, table.roleId] })],
+);
+
+let rolesToPermissions = t.sqliteTable(
+	'roles_to_permissions',
+	{
+		permissionId: t
+			.text('permission_id')
+			.notNull()
+			.references(() => permissions.id),
+		roleId: t
+			.text('role_id')
+			.notNull()
+			.references((): AnySQLiteColumn => roles.id),
+	},
+	(table) => [t.primaryKey({ columns: [table.roleId, table.permissionId] })],
+);
+
 type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
@@ -63,4 +113,14 @@ type SelectPostImage = typeof postImages.$inferSelect;
 
 export type { SelectPassword, SelectPost, SelectPostImage, SelectUser };
 
-export { passwords, postImages, posts, userAvatar, users };
+export {
+	passwords,
+	permissions,
+	postImages,
+	posts,
+	roles,
+	rolesToPermissions,
+	userAvatar,
+	users,
+	usersToRoles,
+};
