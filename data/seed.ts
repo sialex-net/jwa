@@ -198,6 +198,40 @@ async function seed() {
 	}
 	console.timeEnd(`Created ${totalUsers} new users...`);
 
+	let totalAdmins = 1;
+
+	console.time(`Created ${totalAdmins} new admin...`);
+	let adminRole = await db
+		.select({ id: schema.roles.id })
+		.from(schema.roles)
+		.where(eq(schema.roles.name, 'admin'))
+		.get();
+
+	let adminResult = await db
+		.insert(schema.users)
+		.values({ email: 'john@hotmail.com', username: 'john' })
+		.returning()
+		.get();
+
+	if (adminRole) {
+		await db
+			.insert(schema.usersToRoles)
+			.values({ roleId: adminRole.id, userId: adminResult.id });
+	}
+
+	if (userRole) {
+		await db
+			.insert(schema.usersToRoles)
+			.values({ roleId: userRole.id, userId: adminResult.id });
+	}
+
+	await db.insert(schema.passwords).values({
+		...createPasswordHash(adminResult.email),
+		userId: adminResult.id,
+	});
+
+	console.timeEnd(`Created ${totalAdmins} new admin...`);
+
 	console.timeEnd(`Done`);
 }
 
