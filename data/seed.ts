@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { faker } from '@faker-js/faker';
 import { genSaltSync, hashSync } from 'bcrypt-ts/node';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { UniqueEnforcer } from 'enforce-unique';
 import { getClientNode } from './clients/libsql-node';
@@ -139,6 +140,12 @@ async function seed() {
 		}),
 	]);
 
+	let userRole = await db
+		.select({ id: schema.roles.id })
+		.from(schema.roles)
+		.where(eq(schema.roles.name, 'user'))
+		.get();
+
 	for (let index = 0; index < totalUsers; index++) {
 		// TODO: maybe do error handling with catch
 
@@ -153,6 +160,12 @@ async function seed() {
 			altText: `Avatar for ${userResult.username}`,
 			userId: userResult.id,
 		});
+
+		if (userRole) {
+			await db
+				.insert(schema.usersToRoles)
+				.values({ roleId: userRole.id, userId: userResult.id });
+		}
 
 		let createdPosts = Array.from({
 			length: faker.number.int({ max: 3, min: 1 }),
