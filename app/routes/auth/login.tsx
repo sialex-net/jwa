@@ -9,12 +9,7 @@ import { Checkbox } from '@/app/components/ui/checkbox';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import {
-	getSessionExpirationDate,
-	login,
-	requireAnonymous,
-	userIdKey,
-} from '@/app/utils/auth.server';
+import { login, requireAnonymous, sessionKey } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import type { Route } from './+types/login';
 
@@ -40,8 +35,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
 	let transformed = LoginSchema.transform(async (data, ctx) => {
-		let user = await login(data);
-		if (!user) {
+		let session = await login(data);
+		if (!session) {
 			ctx.addIssue({
 				code: 'custom',
 				message: 'Invalid username or password',
@@ -49,7 +44,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 			return z.NEVER;
 		}
 
-		return { ...data, user };
+		return { ...data, session };
 	});
 
 	let result = await transformed.safeParseAsync(submission.payload);
@@ -74,18 +69,18 @@ export async function action({ context, request }: Route.ActionArgs) {
 		);
 	}
 
-	let { redirectTo, remember, user } = result.data;
+	let { redirectTo, remember, session } = result.data;
 
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
 	);
 
-	cookieSession.set(userIdKey, user.id);
+	cookieSession.set(sessionKey, session.id);
 
 	return redirect(safeRedirect(redirectTo), {
 		headers: {
 			'set-cookie': await getSessionStorage(env).commitSession(cookieSession, {
-				expires: remember ? getSessionExpirationDate() : undefined,
+				expires: remember ? session.expirationDate : undefined,
 			}),
 		},
 	});

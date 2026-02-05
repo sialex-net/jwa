@@ -1,5 +1,5 @@
 import { compare, genSalt, hash } from 'bcrypt-ts/browser';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
@@ -15,20 +15,26 @@ const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;
 export let getSessionExpirationDate = () =>
 	new Date(Date.now() + SESSION_EXPIRATION_TIME);
 
-export let userIdKey = 'userId';
+export let sessionKey = 'sessionId';
 
 export async function getUserId(env: Env, request: Request) {
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
 	);
-	let userId = cookieSession.get(userIdKey);
-	if (!userId) return null;
+	let sessionId = cookieSession.get(sessionKey);
+	if (!sessionId) return null;
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 	let user = await db
 		.select({ id: schema.users.id })
-		.from(schema.users)
-		.where(eq(schema.users.id, userId))
+		.from(schema.sessions)
+		.where(
+			and(
+				eq(schema.sessions.id, sessionId),
+				gt(schema.sessions.expirationDate, new Date()),
+			),
+		)
+		.innerJoin(schema.users, eq(schema.sessions.userId, schema.users.id))
 		.get();
 
 	client.close();
@@ -92,7 +98,19 @@ export async function login({
 	email: SelectUser['email'];
 	password: string;
 }) {
-	return verifyUserPassword({ email }, password);
+	let user = await verifyUserPassword({ email }, password);
+	if (!user) return null;
+	let client = connectClientCf();
+	let db = drizzle(client, { logger: false, schema });
+	let session = await db
+		.insert(schema.sessions)
+		.values({ expirationDate: getSessionExpirationDate(), userId: user.id })
+		.returning({
+			expirationDate: schema.sessions.expirationDate,
+			id: schema.sessions.id,
+		})
+		.get();
+	return session;
 }
 
 export async function signup({
@@ -105,21 +123,25 @@ export async function signup({
 	username: SelectUser['username'];
 }) {
 	let hashedPassword = await getPasswordHash(password);
-
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
-
 	let user = await db
 		.insert(schema.users)
 		.values({ email: email.toLowerCase(), username: username.toLowerCase() })
 		.returning({ id: schema.users.id })
 		.get();
-
 	await db
 		.insert(schema.passwords)
 		.values({ hash: hashedPassword, userId: user.id });
-
-	return user;
+	let session = await db
+		.insert(schema.sessions)
+		.values({ expirationDate: getSessionExpirationDate(), userId: user.id })
+		.returning({
+			expirationDate: schema.sessions.expirationDate,
+			id: schema.sessions.id,
+		})
+		.get();
+	return session;
 }
 
 export async function logout(
@@ -137,6 +159,15 @@ export async function logout(
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
 	);
+	let sessionId = cookieSession.get(sessionKey);
+	if (sessionId) {
+		let client = connectClientCf();
+		let db = drizzle(client, { logger: false, schema });
+		void db
+			.delete(schema.sessions)
+			.where(eq(schema.sessions.id, sessionId))
+			.catch(() => {});
+	}
 	throw redirect(
 		safeRedirect(redirectTo),
 		combineResponseInits(responseInit, {

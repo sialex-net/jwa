@@ -12,12 +12,7 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
-import {
-	getSessionExpirationDate,
-	requireAnonymous,
-	signup,
-	userIdKey,
-} from '@/app/utils/auth.server';
+import { requireAnonymous, sessionKey, signup } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import {
 	EmailSchema,
@@ -105,8 +100,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 			});
 		}
 	}).transform(async (data) => {
-		let user = await signup(data);
-		return { ...data, user };
+		let session = await signup(data);
+		return { ...data, session };
 	});
 
 	let result = await superRefined.safeParseAsync(submission.payload);
@@ -125,17 +120,17 @@ export async function action({ context, request }: Route.ActionArgs) {
 		);
 	}
 
-	let { user, remember } = result.data;
+	let { remember, session } = result.data;
 
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
 	);
-	cookieSession.set(userIdKey, user.id);
+	cookieSession.set(sessionKey, session.id);
 
 	return redirect('/', {
 		headers: {
 			'set-cookie': await getSessionStorage(env).commitSession(cookieSession, {
-				expires: remember ? getSessionExpirationDate() : undefined,
+				expires: remember ? session.expirationDate : undefined,
 			}),
 		},
 	});
