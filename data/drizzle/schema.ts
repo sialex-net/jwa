@@ -103,6 +103,18 @@ let rolesToPermissions = t.sqliteTable(
 	(table) => [t.primaryKey({ columns: [table.roleId, table.permissionId] })],
 );
 
+let sessions = t.sqliteTable('sessions', {
+	expirationDate: t
+		.integer('expiration_date', { mode: 'timestamp_ms' })
+		.notNull(),
+	id,
+	userId: t
+		.text('user_id')
+		.notNull()
+		.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
+	...timestamps,
+});
+
 type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
@@ -120,6 +132,7 @@ export {
 	posts,
 	roles,
 	rolesToPermissions,
+	sessions,
 	userAvatar,
 	users,
 	usersToRoles,
