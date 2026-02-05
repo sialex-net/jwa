@@ -12,7 +12,7 @@ import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import { getPostImgSrc } from '@/app/utils/images';
 import { requireUserWithPermission } from '@/app/utils/permissions.server';
-import { useOptionalUser } from '@/app/utils/user';
+import { useOptionalUser, userHasPermission } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/post-id';
 import type { Route as PostsRoute } from './+types/posts';
@@ -115,6 +115,12 @@ export default function Component({
 }: Route.ComponentProps) {
 	let user = useOptionalUser();
 	let isOwner = user?.id === loaderData.post.owner.id;
+	let canDelete = userHasPermission(
+		user,
+		isOwner ? `delete:note:own` : `delete:note:any`,
+	);
+
+	let displayBar = canDelete || isOwner;
 
 	return (
 		<div className="absolute inset-0 flex flex-col px-10">
@@ -143,7 +149,7 @@ export default function Component({
 					{loaderData.post.content}
 				</p>
 			</div>
-			{isOwner ? (
+			{displayBar ? (
 				<div className={floatingToolbarClassName}>
 					<DeleteNote
 						actionData={actionData}
