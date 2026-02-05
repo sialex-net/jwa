@@ -48,15 +48,70 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 
-	let user = userId
+	let query = userId
 		? await db
-				.select({ id: schema.users.id, username: schema.users.username })
+				.select({
+					permissions: {
+						access: schema.permissions.access,
+						action: schema.permissions.action,
+						entity: schema.permissions.entity,
+					},
+					roles: { name: schema.roles.name },
+					users: {
+						id: schema.users.id,
+						username: schema.users.username,
+					},
+				})
 				.from(schema.users)
 				.where(eq(schema.users.id, userId))
-				.get()
+				.innerJoin(
+					schema.usersToRoles,
+					eq(schema.users.id, schema.usersToRoles.userId),
+				)
+				.innerJoin(
+					schema.roles,
+					eq(schema.usersToRoles.roleId, schema.roles.id),
+				)
+				.innerJoin(
+					schema.rolesToPermissions,
+					eq(schema.usersToRoles.roleId, schema.rolesToPermissions.roleId),
+				)
+				.innerJoin(
+					schema.permissions,
+					eq(schema.rolesToPermissions.permissionId, schema.permissions.id),
+				)
 		: null;
 
 	client.close();
+
+	let user = query
+		? {
+				id: query?.[0].users.id,
+				roles: query
+					.map((item) => item.roles)
+					.filter(
+						(item, index, self) =>
+							index === self.findIndex((s) => s.name === item.name),
+					)
+					.map((role) => ({
+						...role,
+						permissions: query
+							.map((item) =>
+								role.name === item.roles.name ? item.permissions : undefined,
+							)
+							.filter(
+								(
+									item,
+								): item is {
+									access: string;
+									action: string;
+									entity: string;
+								} => Boolean(item),
+							),
+					})),
+				username: query?.[0].users.username,
+			}
+		: null;
 
 	return data({
 		requestInfo: {
