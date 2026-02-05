@@ -9,11 +9,11 @@ import { render } from 'vitest-browser-react';
 
 export type StubRouteEntry = Parameters<typeof createRoutesStub>[0][0];
 
-let renderStub = async (args?: {
+const renderStub = async (args?: {
 	entries?: StubRouteEntry[];
 	props?: RoutesTestStubProps;
 }) => {
-	let entries: StubRouteEntry[] = [
+	const entries: StubRouteEntry[] = [
 		{
 			Component: () => (
 				<div data-testid="root">
@@ -25,17 +25,17 @@ let renderStub = async (args?: {
 			path: '/',
 		},
 	];
-	let props: RoutesTestStubProps = {
+	const props: RoutesTestStubProps = {
 		...args?.props,
 		initialEntries: args?.props?.initialEntries ?? ['/'],
 	};
-	let Stub = createRoutesStub(entries);
-	let renderedScreen = render(<Stub {...props} />);
+	const Stub = createRoutesStub(entries);
+	const renderedScreen = render(<Stub {...props} />);
 
 	return renderedScreen;
 };
 
-let renderHook = renderReactHook;
+const renderHook = renderReactHook;
 
 declare module 'vitest' {
 	export interface TestContext {
