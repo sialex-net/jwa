@@ -4,7 +4,6 @@ import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUserId } from '@/app/utils/auth.server';
 import { getDomainUrl } from '@/app/utils/get-domain-url';
-import type { SelectPost, SelectPostImage } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/download-user-data';
 
@@ -28,6 +27,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 				...postImagesColumnsWithoutBlob,
 				altText: sql<null | string>`${schema.postImages.altText}`,
 			},
+			sessions: schema.sessions,
 			user: schema.users,
 			userAvatar: userAvatarColumnsWithoutBlob,
 		})
@@ -35,41 +35,45 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.where(eq(schema.users.id, userId))
 		.leftJoin(schema.userAvatar, eq(schema.users.id, schema.userAvatar.userId))
 		.leftJoin(schema.posts, eq(schema.users.id, schema.posts.userId))
-		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId));
+		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId))
+		.innerJoin(schema.sessions, eq(schema.users.id, schema.sessions.userId));
 
 	let domain = getDomainUrl(request);
 
-	let postsData: Array<
-		SelectPost & {
-			images: Array<Omit<SelectPostImage, 'blob'> & { url: string }>;
-		}
-	> = [];
+	let imagesData = userData
+		.map((item) => item.postImages)
+		.filter((item) => item !== null)
+		.filter(
+			(item, index, self) => index === self.findIndex((s) => s.id === item.id),
+		)
+		.map((item) => ({
+			...item,
+			url: `${domain}/resources/post-images/${item.id}`,
+		}));
 
-	for (let userDataItem of userData) {
-		// if true already pushed
-		let inPostsData = postsData.some(
-			(item) => item.id === userDataItem.post?.id,
-		);
-		if (!inPostsData && userDataItem.post) {
-			postsData.push({ ...userDataItem.post, images: [] });
-		}
-
-		// index position of parent
-		let idxOfPost = postsData.findIndex(
-			(item) => item.id === userDataItem.postImages?.postId,
-		);
-		if (idxOfPost !== -1 && userDataItem.postImages) {
-			let id = userDataItem.postImages.id;
-			postsData[idxOfPost].images.push({
-				...userDataItem.postImages,
-				url: `${domain}/resources/post-images/${id}`,
-			});
-		}
-	}
+	let postsData = userData
+		.map((item) => item.post)
+		.filter((item) => item !== null)
+		.filter(
+			(item, index, self) => index === self.findIndex((s) => s.id === item.id),
+		)
+		.map((item) => {
+			let images = imagesData.filter((i) => i.postId === item.id);
+			return {
+				...item,
+				images,
+			};
+		});
 
 	return Response.json({
 		userData: {
 			posts: postsData,
+			sessions: userData
+				.map((item) => item.sessions)
+				.filter(
+					(item, index, self) =>
+						index === self.findIndex((s) => s.id === item.id),
+				),
 			user: {
 				...userData?.[0].user,
 				avatar: userData?.[0].userAvatar
