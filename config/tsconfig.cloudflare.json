@@ -1,25 +1,25 @@
 {
 	"$schema": "http://json.schemastore.org/tsconfig",
 	"compilerOptions": {
-		"esModuleInterop": true,
+		"emitDeclarationOnly": true,
 		"jsx": "react-jsx",
-		"lib": ["DOM", "DOM.Iterable", "ES2022"],
-		"module": "ES2022",
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
+		"lib": ["DOM", "DOM.Iterable", "ES2023"],
+		"noEmit": false,
+		"outDir": "../node_modules/.tmp/tsc",
 		"rootDirs": ["..", "../.react-router/types"],
-		"target": "ES2022",
-		"tsBuildInfoFile": "../node_modules/.tmp/tsconfig.cloudflare.tsbuildinfo",
-		"types": ["node", "vite/client"]
+		"tsBuildInfoFile": "../node_modules/.tmp/tsc/tsconfig.cloudflare.tsbuildinfo",
+		"types": ["vite/client"]
 	},
 	"extends": "./tsconfig.base.json",
 	"include": [
 		"../.react-router/types/**/*",
+		"../app/**/*.json",
 		"../app/**/*.ts",
 		"../app/**/*.tsx",
 		"../config/**/*.ts",
 		"../data/**/*.ts",
 		"../react-router.config.ts",
+		"../tests/browser/setup.browser.tsx",
 		"../worker-configuration.d.ts"
 	]
 }

@@ -1,17 +1,30 @@
 {
 	"$schema": "http://json.schemastore.org/tsconfig",
 	"compilerOptions": {
+		"allowJs": false,
 		"baseUrl": "..",
-		"checkJs": true,
 		"composite": true,
 		"erasableSyntaxOnly": true,
+		"esModuleInterop": false,
+		"incremental": true,
+		"lib": ["ES2023"],
+		"module": "ESNext",
+		"moduleDetection": "force",
+		"moduleResolution": "bundler",
 		"noEmit": true,
+		"noErrorTruncation": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
 		"paths": {
 			"@/*": ["./*"]
 		},
+		"resolveJsonModule": true,
+		"rootDir": "..",
 		"skipLibCheck": true,
 		"strict": true,
+		"target": "ES2023",
+		"types": [],
 		"verbatimModuleSyntax": true
-	},
-	"extends": "../tsconfig.json"
+	}
 }
