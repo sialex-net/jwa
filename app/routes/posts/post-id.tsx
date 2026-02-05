@@ -11,6 +11,7 @@ import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUser } from '@/app/utils/auth.server';
 import { getPostImgSrc } from '@/app/utils/images';
+import { requireUserWithPermission } from '@/app/utils/permissions.server';
 import { useOptionalUser } from '@/app/utils/user';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/post-id';
@@ -59,21 +60,12 @@ const DeleteFormSchema = z.object({
 	noteId: z.string(),
 });
 
-export async function action({ context, params, request }: Route.LoaderArgs) {
+export async function action({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let user = await requireUser(env, request);
-	invariantResponse(
-		user.username === params.username,
-		'You do not have permission to access the requested resource',
-		{
-			status: 403,
-		},
-	);
 
 	let formData = await request.formData();
-
 	let submission = parseSubmission(formData);
-
 	let result = DeleteFormSchema.safeParse(submission.payload);
 
 	if (!result.success) {
@@ -97,7 +89,7 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 	let query = await db
 		.select({
 			posts: { id: schema.posts.id },
-			users: { username: schema.users.username },
+			users: { id: schema.users.id, username: schema.users.username },
 		})
 		.from(schema.posts)
 		.where(eq(schema.posts.id, noteId))
@@ -105,6 +97,13 @@ export async function action({ context, params, request }: Route.LoaderArgs) {
 		.get();
 
 	invariantResponse(query, `postId ${noteId} does not exist`, { status: 404 });
+
+	let isOwner = query.users.id === user.id;
+	await requireUserWithPermission(
+		env,
+		request,
+		isOwner ? `delete:note:own` : `delete:note:any`,
+	);
 
 	await db.delete(schema.posts).where(eq(schema.posts.id, query.posts.id));
 	return redirect(`/users/${query.users.username}/posts`);
@@ -221,5 +220,15 @@ export const meta: Route.MetaFunction = ({ loaderData, params, matches }) => {
 };
 
 export function ErrorBoundary() {
-	return <GeneralErrorBoundary />;
+	return (
+		<GeneralErrorBoundary
+			statusHandlers={{
+				403: () => (
+					<p className="max-w-md">
+						You do not have permission to access the requested resource
+					</p>
+				),
+			}}
+		/>
+	);
 }
