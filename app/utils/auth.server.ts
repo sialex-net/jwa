@@ -12,7 +12,7 @@ import { getSessionStorage } from './sessions.server';
 
 const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;
 
-export let getSessionExpirationDate = () =>
+let getSessionExpirationDate = () =>
 	new Date(Date.now() + SESSION_EXPIRATION_TIME);
 
 export let sessionKey = 'sessionId';
