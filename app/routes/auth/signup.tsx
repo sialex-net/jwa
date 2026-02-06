@@ -1,4 +1,5 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
+import { generateTOTP } from '@epic-web/totp';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import type { MetaFunction } from 'react-router';
@@ -13,14 +14,15 @@ import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireAnonymous } from '@/app/utils/auth.server';
 import { sendEmail } from '@/app/utils/email.server';
+import { getDomainUrl } from '@/app/utils/get-domain-url';
 import { EmailSchema } from '@/app/utils/user-validation';
-import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/signup';
-import { onboardingEmailSessionKey } from './onboarding';
+import { codeQueryParam, targetQueryParam, typeQueryParam } from './verify';
 
 const SignupFormSchema = z.object({
 	email: EmailSchema,
+	redirectTo: z.string().optional(),
 });
 
 export async function loader({ context, request }: Route.LoaderArgs) {
@@ -71,23 +73,39 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { email } = result.data;
 
+	let { otp, ...verificationConfig } = await generateTOTP({
+		algorithm: 'SHA-256',
+		period: 10 * 60, // valid for 10 minutes
+	});
+	const type = 'onboarding';
+	const redirectToUrl = new URL(`${getDomainUrl(request)}/verify`);
+	redirectToUrl.searchParams.set(typeQueryParam, type);
+	redirectToUrl.searchParams.set(targetQueryParam, email);
+	const verifyUrl = new URL(redirectToUrl);
+	verifyUrl.searchParams.set(codeQueryParam, otp);
+
+	const verificationData = {
+		target: email,
+		type,
+		...verificationConfig,
+		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
+	};
+	await db
+		.insert(schema.verifications)
+		.values(verificationData)
+		.onConflictDoUpdate({
+			set: verificationData,
+			target: [schema.verifications.target, schema.verifications.type],
+		});
+
 	let response = await sendEmail(env, {
 		subject: 'Welcome to John Wicki',
-		text: 'test',
+		text: `Here's your code: ${otp}. Or open this: ${verifyUrl.toString()}`,
 		to: email,
 	});
 
 	if (response?.status === 'success') {
-		const verifySession = await getVerifySessionStorage(env).getSession(
-			request.headers.get('cookie'),
-		);
-		verifySession.set(onboardingEmailSessionKey, email);
-		return redirect('/onboarding', {
-			headers: {
-				'set-cookie':
-					await getVerifySessionStorage(env).commitSession(verifySession),
-			},
-		});
+		return redirect(redirectToUrl.toString());
 	} else {
 		return data(
 			{
