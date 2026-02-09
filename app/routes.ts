@@ -8,6 +8,7 @@ export default [
 	route('logout', './routes/auth/logout.tsx'),
 	route('signup', './routes/auth/signup.tsx'),
 	route('onboarding', './routes/auth/onboarding.tsx'),
+	route('verify', './routes/auth/verify.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
 	route('users', './routes/users/users.tsx', [
 		index('./routes/users/home.tsx'),
