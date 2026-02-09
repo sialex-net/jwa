@@ -86,6 +86,7 @@ async function seed() {
 
 	console.time('Deleted existing users...');
 	await db.delete(schema.users);
+	await db.delete(schema.verifications);
 	console.timeEnd('Deleted existing users...');
 
 	let totalUsers = 5;
