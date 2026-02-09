@@ -115,6 +115,23 @@ let sessions = t.sqliteTable('sessions', {
 	...timestamps,
 });
 
+let verifications = t.sqliteTable(
+	'verifications',
+	{
+		algorithm: t.text('algorithm').notNull(),
+		charSet: t.text('char_set').notNull(),
+		createdAt: timestamps.createdAt,
+		digits: t.integer('digits').notNull(),
+		expiresAt: t.integer('expires_at', { mode: 'timestamp_ms' }),
+		id,
+		period: t.integer('period').notNull(),
+		secret: t.text('secret').notNull(),
+		target: t.text('target').notNull(),
+		type: t.text('type').notNull(),
+	},
+	(table) => [t.unique().on(table.target, table.type)],
+);
+
 type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
@@ -132,4 +149,5 @@ export {
 	userAvatar,
 	users,
 	usersToRoles,
+	verifications,
 };
