@@ -133,6 +133,16 @@ export async function signup({
 	await db
 		.insert(schema.passwords)
 		.values({ hash: hashedPassword, userId: user.id });
+	let userRole = await db
+		.select({ id: schema.roles.id })
+		.from(schema.roles)
+		.where(eq(schema.roles.name, 'user'))
+		.get();
+	if (userRole) {
+		await db
+			.insert(schema.usersToRoles)
+			.values({ roleId: userRole.id, userId: user.id });
+	}
 	let session = await db
 		.insert(schema.sessions)
 		.values({ expirationDate: getSessionExpirationDate(), userId: user.id })
