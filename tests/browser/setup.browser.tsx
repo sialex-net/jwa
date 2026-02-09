@@ -1,9 +1,6 @@
 import { renderHook as renderReactHook } from '@testing-library/react';
-import {
-	createRoutesStub,
-	Outlet,
-	type RoutesTestStubProps,
-} from 'react-router';
+import type { RoutesTestStubProps } from 'react-router';
+import { createRoutesStub, Outlet } from 'react-router';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 
