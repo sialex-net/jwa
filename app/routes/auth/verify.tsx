@@ -1,8 +1,5 @@
-import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { verifyTOTP } from '@epic-web/totp';
-import { and, eq, gt, isNull, or } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/libsql';
-import { data, Form, redirect, useSearchParams } from 'react-router';
+import { useForm } from '@conform-to/react/future';
+import { Form, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
 import { Spacer } from '@/app/components/spacer';
@@ -10,11 +7,8 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import { connectClientCf } from '@/app/middleware/libsql';
-import { getVerifySessionStorage } from '@/app/utils/verification.server';
-import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/verify';
-import { onboardingEmailSessionKey } from './onboarding';
+import { validateRequest } from './verify.server';
 
 export const codeQueryParam = 'code';
 export const targetQueryParam = 'target';
@@ -25,7 +19,7 @@ const types = ['onboarding'] as const;
 const VerificationTypeSchema = z.enum(types);
 export type VerificationTypes = z.infer<typeof VerificationTypeSchema>;
 
-const VerifySchema = z.object({
+export const VerifyFormSchema = z.object({
 	[codeQueryParam]: z.string().min(6).max(6),
 	[typeQueryParam]: VerificationTypeSchema,
 	[targetQueryParam]: z.string(),
@@ -33,7 +27,7 @@ const VerifySchema = z.object({
 });
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-	const params = new URL(request.url).searchParams;
+	let params = new URL(request.url).searchParams;
 	if (!params.has(codeQueryParam)) {
 		return { result: null };
 	}
@@ -44,107 +38,19 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 }
 
 export async function action({ context, request }: Route.ActionArgs) {
-	const formData = await request.formData();
+	let formData = await request.formData();
 	let { env } = getContext(context, appContext);
 	return validateRequest(env, request, formData);
-}
-
-async function validateRequest(
-	env: Env,
-	request: Request,
-	body: FormData | URLSearchParams,
-) {
-	let submission = parseSubmission(body);
-
-	let client = connectClientCf();
-	let db = drizzle({ client, logger: false, schema });
-
-	let superRefined = VerifySchema.superRefine(async (data, ctx) => {
-		let verification = await db
-			.select({
-				algorithm: schema.verifications.algorithm,
-				charSet: schema.verifications.charSet,
-				digits: schema.verifications.digits,
-				period: schema.verifications.period,
-				secret: schema.verifications.secret,
-			})
-			.from(schema.verifications)
-			.where(
-				or(
-					gt(schema.verifications.expiresAt, new Date()),
-					isNull(schema.verifications.expiresAt),
-				),
-			)
-			.get();
-		if (!verification) {
-			ctx.addIssue({
-				code: 'custom',
-				message: `Invalid code`,
-				path: [codeQueryParam],
-			});
-			return z.NEVER;
-		}
-		let codeIsValid = await verifyTOTP({
-			otp: data[codeQueryParam],
-			...verification,
-		});
-		if (!codeIsValid) {
-			ctx.addIssue({
-				code: 'custom',
-				message: `Invalid code`,
-				path: [codeQueryParam],
-			});
-			return z.NEVER;
-		}
-	});
-
-	let result = await superRefined.safeParseAsync(submission.payload);
-
-	if (!result.success) {
-		return data(
-			{
-				result: report(submission, {
-					error: {
-						issues: result.error.issues,
-					},
-				}),
-			},
-			{ status: 400 },
-		);
-	}
-
-	if (client?.closed) {
-		client.reconnect();
-	}
-	await db
-		.delete(schema.verifications)
-		.where(
-			and(
-				eq(schema.verifications.target, result.data[targetQueryParam]),
-				eq(schema.verifications.type, result.data[typeQueryParam]),
-			),
-		);
-
-	const verifySession = await getVerifySessionStorage(env).getSession(
-		request.headers.get('cookie'),
-	);
-	verifySession.set(onboardingEmailSessionKey, result.data[targetQueryParam]);
-	return redirect('/onboarding', {
-		headers: {
-			'set-cookie':
-				await getVerifySessionStorage(env).commitSession(verifySession),
-		},
-	});
 }
 
 export default function Component({
 	actionData,
 	loaderData,
 }: Route.ComponentProps) {
-	const data = loaderData;
-	const [searchParams] = useSearchParams();
+	let data = loaderData;
+	let [searchParams] = useSearchParams();
 
-	const { form, fields } = useForm(VerifySchema, {
+	let { form, fields } = useForm(VerifyFormSchema, {
 		defaultValue: {
 			code: searchParams.get(codeQueryParam) ?? '',
 			redirectTo: searchParams.get(redirectToQueryParam) ?? '',

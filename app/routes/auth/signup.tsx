@@ -1,5 +1,4 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { generateTOTP } from '@epic-web/totp';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import type { MetaFunction } from 'react-router';
@@ -14,11 +13,10 @@ import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireAnonymous } from '@/app/utils/auth.server';
 import { sendEmail } from '@/app/utils/email.server';
-import { getDomainUrl } from '@/app/utils/get-domain-url';
 import { EmailSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/signup';
-import { codeQueryParam, targetQueryParam, typeQueryParam } from './verify';
+import { prepareVerification } from './verify.server';
 
 const SignupFormSchema = z.object({
 	email: EmailSchema,
@@ -71,32 +69,15 @@ export async function action({ context, request }: Route.ActionArgs) {
 		);
 	}
 
-	let { email } = result.data;
+	let { email, redirectTo: postVerificationRedirectTo } = result.data;
 
-	let { otp, ...verificationConfig } = await generateTOTP({
-		algorithm: 'SHA-256',
+	let { verifyUrl, redirectTo, otp } = await prepareVerification({
 		period: 10 * 60, // valid for 10 minutes
-	});
-	const type = 'onboarding';
-	const redirectToUrl = new URL(`${getDomainUrl(request)}/verify`);
-	redirectToUrl.searchParams.set(typeQueryParam, type);
-	redirectToUrl.searchParams.set(targetQueryParam, email);
-	const verifyUrl = new URL(redirectToUrl);
-	verifyUrl.searchParams.set(codeQueryParam, otp);
-
-	const verificationData = {
+		redirectTo: postVerificationRedirectTo,
+		request,
 		target: email,
-		type,
-		...verificationConfig,
-		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
-	};
-	await db
-		.insert(schema.verifications)
-		.values(verificationData)
-		.onConflictDoUpdate({
-			set: verificationData,
-			target: [schema.verifications.target, schema.verifications.type],
-		});
+		type: 'onboarding',
+	});
 
 	let response = await sendEmail(env, {
 		subject: 'Welcome to John Wicki',
@@ -105,7 +86,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 	});
 
 	if (response?.status === 'success') {
-		return redirect(redirectToUrl.toString());
+		return redirect(redirectTo.toString());
 	} else {
 		return data(
 			{
