@@ -8,6 +8,7 @@ import { connectClientCf } from '@/app/middleware/libsql';
 import { getDomainUrl } from '@/app/utils/get-domain-url';
 import * as schema from '@/data/drizzle/schema';
 import { handleVerification as handleOnboardingVerification } from './onboarding.server';
+import { handleVerification as handleResetPasswordVerification } from './reset-password.server';
 import type { VerificationTypes } from './verify';
 import {
 	codeQueryParam,
@@ -193,6 +194,13 @@ export async function validateRequest(
 	switch (result.data[typeQueryParam]) {
 		case 'onboarding': {
 			return handleOnboardingVerification(env, {
+				body,
+				request,
+				result: result.data,
+			});
+		}
+		case 'reset-password': {
+			return handleResetPasswordVerification(env, {
 				body,
 				request,
 				result: result.data,

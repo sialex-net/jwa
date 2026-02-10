@@ -9,6 +9,8 @@ export default [
 	route('signup', './routes/auth/signup.tsx'),
 	route('onboarding', './routes/auth/onboarding.tsx'),
 	route('verify', './routes/auth/verify.tsx'),
+	route('forgot-password', './routes/auth/forgot-password.tsx'),
+	route('reset-password', './routes/auth/reset-password.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
 	route('users', './routes/users/users.tsx', [
 		index('./routes/users/home.tsx'),
