@@ -1,5 +1,6 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
 import { invariant } from '@epic-web/invariant';
+import * as ReactEmail from '@react-email/components';
 import { eq, or } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { data, Link, redirect, useFetcher } from 'react-router';
@@ -89,8 +90,13 @@ export async function action({ context, request }: Route.ActionArgs) {
 	});
 
 	let response = await sendEmail(env, {
-		subject: `Epic Notes Password Reset`,
-		text: `Here's your code: ${otp}. Or open this: ${verifyUrl.toString()}`,
+		react: (
+			<ForgotPasswordEmail
+				onboardingUrl={verifyUrl.toString()}
+				otp={otp}
+			/>
+		),
+		subject: `John Wicki Password Reset`,
 		to: user.email,
 	});
 
@@ -101,13 +107,43 @@ export async function action({ context, request }: Route.ActionArgs) {
 			{
 				result: report(submission, {
 					error: {
-						formErrors: [response.error],
+						formErrors: [response.error.message],
 					},
 				}),
 			},
 			{ status: 500 },
 		);
 	}
+}
+
+function ForgotPasswordEmail({
+	onboardingUrl,
+	otp,
+}: {
+	onboardingUrl: string;
+	otp: string;
+}) {
+	return (
+		<ReactEmail.Html
+			dir="ltr"
+			lang="en"
+		>
+			<ReactEmail.Container>
+				<h1>
+					<ReactEmail.Text>John Wicki Password Reset</ReactEmail.Text>
+				</h1>
+				<p>
+					<ReactEmail.Text>
+						Here's your verification code: <strong>{otp}</strong>
+					</ReactEmail.Text>
+				</p>
+				<p>
+					<ReactEmail.Text>Or click the link:</ReactEmail.Text>
+				</p>
+				<ReactEmail.Link href={onboardingUrl}>{onboardingUrl}</ReactEmail.Link>
+			</ReactEmail.Container>
+		</ReactEmail.Html>
+	);
 }
 
 export const meta: Route.MetaFunction = () => {

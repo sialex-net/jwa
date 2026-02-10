@@ -1,4 +1,5 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
+import * as ReactEmail from '@react-email/components';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import type { MetaFunction } from 'react-router';
@@ -80,8 +81,13 @@ export async function action({ context, request }: Route.ActionArgs) {
 	});
 
 	let response = await sendEmail(env, {
+		react: (
+			<SignupEmail
+				onboardingUrl={verifyUrl.toString()}
+				otp={otp}
+			/>
+		),
 		subject: 'Welcome to John Wicki',
-		text: `Here's your code: ${otp}. Or open this: ${verifyUrl.toString()}`,
 		to: email,
 	});
 
@@ -92,13 +98,43 @@ export async function action({ context, request }: Route.ActionArgs) {
 			{
 				result: report(submission, {
 					error: {
-						formErrors: [response.error],
+						formErrors: [response.error.message],
 					},
 				}),
 			},
 			{ status: 500 },
 		);
 	}
+}
+
+export function SignupEmail({
+	onboardingUrl,
+	otp,
+}: {
+	onboardingUrl: string;
+	otp: string;
+}) {
+	return (
+		<ReactEmail.Html
+			dir="ltr"
+			lang="en"
+		>
+			<ReactEmail.Container>
+				<h1>
+					<ReactEmail.Text>Welcome to John Wicki!</ReactEmail.Text>
+				</h1>
+				<p>
+					<ReactEmail.Text>
+						Here's your verification code: <strong>{otp}</strong>
+					</ReactEmail.Text>
+				</p>
+				<p>
+					<ReactEmail.Text>Or click the link to get started:</ReactEmail.Text>
+				</p>
+				<ReactEmail.Link href={onboardingUrl}>{onboardingUrl}</ReactEmail.Link>
+			</ReactEmail.Container>
+		</ReactEmail.Html>
+	);
 }
 
 export const meta: MetaFunction = () => {
