@@ -6,6 +6,7 @@
 		"@epic-web/invariant": "^1.0.0",
 		"@epic-web/totp": "^4.0.1",
 		"@libsql/client": "^0.15.15",
+		"@react-email/components": "1.0.7",
 		"@remix-run/form-data-parser": "^0.14.0",
 		"bcrypt-ts": "^8.0.1",
 		"cookie": "^1.1.1",
