@@ -113,6 +113,25 @@ export async function login({
 	return session;
 }
 
+export async function resetUserPassword({
+	username,
+	password,
+}: {
+	password: string;
+	username: SelectUser['username'];
+}) {
+	let hashedPassword = await getPasswordHash(password);
+	let client = connectClientCf();
+	let db = drizzle(client, { logger: false, schema });
+	let user = await db
+		.select({ id: schema.users.id })
+		.from(schema.users)
+		.where(eq(schema.users.username, username))
+		.get();
+	if (!user) return null;
+	return db.update(schema.passwords).set({ hash: hashedPassword });
+}
+
 export async function signup({
 	email,
 	username,
