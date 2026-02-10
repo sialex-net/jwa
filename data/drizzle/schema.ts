@@ -46,7 +46,7 @@ let postImages = t.sqliteTable('post_images', {
 });
 
 let passwords = t.sqliteTable('passwords', {
-	hash: t.text('hash').notNull().unique(),
+	hash: t.text('hash').notNull(),
 	userId: t
 		.text('user_id')
 		.notNull()
