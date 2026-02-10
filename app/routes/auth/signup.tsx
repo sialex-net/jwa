@@ -218,7 +218,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 							or{' '}
 							<Link
 								className="underline hover:no-underline"
-								to="/reset-password"
+								to="/forgot-password"
 							>
 								reset password
 							</Link>
