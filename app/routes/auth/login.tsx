@@ -239,6 +239,16 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					Sign Up
 				</Link>
 			</p>
+			<Spacer size="3xs" />
+			<p>
+				<Link
+					className="underline hover:no-underline"
+					prefetch="intent"
+					to="/forgot-password"
+				>
+					Forgot password?
+				</Link>
+			</p>
 		</main>
 	);
 }
