@@ -14,12 +14,11 @@ import { connectClientCf } from '@/app/middleware/libsql';
 import { requireUserId, sessionKey } from '@/app/utils/auth.server';
 import { getUserImgSrc } from '@/app/utils/images';
 import { getSessionStorage } from '@/app/utils/sessions.server';
-import { EmailSchema, UsernameSchema } from '@/app/utils/user-validation';
+import { UsernameSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/home';
 
 const ProfileFormSchema = z.object({
-	email: EmailSchema,
 	username: UsernameSchema,
 });
 
@@ -123,6 +122,13 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 			<div className="col-span-6 my-6 h-1 border-foreground border-b-[1.5px]" />
 			<div className="col-span-full flex flex-col gap-6">
 				<div>
+					<Link to="change-email">
+						<Icon name="envelope-closed">
+							Change email from {loaderData.user.email}
+						</Icon>
+					</Link>
+				</div>
+				<div>
 					<Link to="password">
 						<Icon name="dots-horizontal">Change Password</Icon>
 					</Link>
@@ -149,7 +155,7 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 	let db = drizzle(client, { logger: false, schema });
 
 	let superRefined = ProfileFormSchema.superRefine(
-		async ({ email, username }, ctx) => {
+		async ({ username }, ctx) => {
 			let existingUsername = await db
 				.select({ id: schema.users.id })
 				.from(schema.users)
@@ -160,18 +166,6 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 					code: 'custom',
 					message: 'Username not available',
 					path: ['username'],
-				});
-			}
-			let existingEmail = await db
-				.select({ id: schema.users.id })
-				.from(schema.users)
-				.where(eq(schema.users.email, email))
-				.get();
-			if (existingEmail && existingEmail.id !== userId) {
-				ctx.addIssue({
-					code: 'custom',
-					message: 'Email already registered',
-					path: ['email'],
 				});
 			}
 		},
@@ -194,7 +188,7 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 
 	await db
 		.update(schema.users)
-		.set({ email: result.data.email, username: result.data.username })
+		.set({ username: result.data.username })
 		.where(eq(schema.users.id, userId));
 
 	return { result: report(submission) };
@@ -207,7 +201,6 @@ function UpdateProfile() {
 
 	let { form, fields } = useForm(ProfileFormSchema, {
 		defaultValue: {
-			email: loaderData.user.email,
 			username: loaderData.user.username,
 		},
 		id: 'edit-profile',
@@ -220,41 +213,6 @@ function UpdateProfile() {
 			method="POST"
 			{...form.props}
 		>
-			<div className="relative">
-				<Input
-					aria-describedby={
-						!fields.email.valid
-							? fields.email.errorId
-							: fields.email.descriptionId
-					}
-					aria-invalid={!fields.email.valid ? true : undefined}
-					className="peer pt-7 leading-5"
-					defaultValue={fields.email.defaultValue}
-					id={fields.email.id}
-					name={fields.email.name}
-					type="text"
-				/>
-				<Label
-					className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
-					htmlFor={fields.email.id}
-				>
-					Email
-				</Label>
-				<div
-					aria-hidden={true}
-					className="sr-only"
-					id={fields.email.descriptionId}
-				>
-					Please enter a new email
-				</div>
-				<div
-					aria-hidden={true}
-					className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs"
-					id={fields.email.errorId}
-				>
-					{fields.email.errors}
-				</div>
-			</div>
 			<div className="relative">
 				<Input
 					aria-describedby={

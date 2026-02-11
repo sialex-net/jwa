@@ -28,6 +28,7 @@ export default [
 		index('./routes/settings/home.tsx'),
 		route('password', './routes/settings/password.tsx'),
 		route('avatar', './routes/settings/avatar.tsx'),
+		route('change-email', './routes/settings/change-email.tsx'),
 	]),
 	...prefix('resources', [
 		route('user-avatar/:imageId', './routes/resources/user-avatar/imageId.tsx'),

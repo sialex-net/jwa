@@ -5,6 +5,7 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { data } from 'react-router';
 import { z } from 'zod';
 import { connectClientCf } from '@/app/middleware/libsql';
+import { handleVerification as handleChangeEmailVerification } from '@/app/routes/settings/change-email.server';
 import { getDomainUrl } from '@/app/utils/get-domain-url';
 import * as schema from '@/data/drizzle/schema';
 import { handleVerification as handleOnboardingVerification } from './onboarding.server';
@@ -192,6 +193,13 @@ export async function validateRequest(
 		);
 
 	switch (result.data[typeQueryParam]) {
+		case 'change-email': {
+			return handleChangeEmailVerification(env, {
+				body,
+				request,
+				result: result.data,
+			});
+		}
 		case 'onboarding': {
 			return handleOnboardingVerification(env, {
 				body,
