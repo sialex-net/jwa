@@ -28,6 +28,7 @@ export async function handleVerification(
 			or(eq(schema.users.email, target), eq(schema.users.username, target)),
 		)
 		.get();
+	client.close();
 	if (!user) {
 		return data(
 			{
