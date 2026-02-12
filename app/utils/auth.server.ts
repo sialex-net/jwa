@@ -110,6 +110,7 @@ export async function login({
 			id: schema.sessions.id,
 		})
 		.get();
+	client.close();
 	return session;
 }
 
@@ -128,8 +129,15 @@ export async function resetUserPassword({
 		.from(schema.users)
 		.where(eq(schema.users.username, username))
 		.get();
-	if (!user) return null;
-	return db.update(schema.passwords).set({ hash: hashedPassword });
+	if (!user) {
+		client.close();
+		return null;
+	}
+	return void db
+		.update(schema.passwords)
+		.set({ hash: hashedPassword })
+		.catch(() => {})
+		.finally(() => client.close());
 }
 
 export async function signup({
@@ -170,6 +178,7 @@ export async function signup({
 			id: schema.sessions.id,
 		})
 		.get();
+	client.close();
 	return session;
 }
 
@@ -195,7 +204,8 @@ export async function logout(
 		void db
 			.delete(schema.sessions)
 			.where(eq(schema.sessions.id, sessionId))
-			.catch(() => {});
+			.catch(() => {})
+			.finally(() => client.close());
 	}
 	throw redirect(
 		safeRedirect(redirectTo),
