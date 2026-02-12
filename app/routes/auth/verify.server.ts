@@ -88,6 +88,8 @@ export async function prepareVerification({
 			target: [schema.verifications.target, schema.verifications.type],
 		});
 
+	client.close();
+
 	verifyUrl.searchParams.set(codeQueryParam, otp);
 
 	return { otp, redirectTo, verifyUrl };
@@ -126,6 +128,7 @@ export async function isCodeValid({
 			),
 		)
 		.get();
+	client.close();
 	if (!verification) return false;
 	let result = await verifyTOTP({
 		algorithm: verification.algorithm,
@@ -191,6 +194,7 @@ export async function validateRequest(
 				eq(schema.verifications.type, result.data[typeQueryParam]),
 			),
 		);
+	client.close();
 
 	switch (result.data[typeQueryParam]) {
 		case 'change-email': {
