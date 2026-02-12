@@ -104,6 +104,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let result = await superRefined.safeParseAsync(submission.payload);
 
+	client.close();
+
 	if (!result.success) {
 		return data(
 			{
