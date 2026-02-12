@@ -133,11 +133,7 @@ export async function resetUserPassword({
 		client.close();
 		return null;
 	}
-	return void db
-		.update(schema.passwords)
-		.set({ hash: hashedPassword })
-		.catch(() => {})
-		.finally(() => client.close());
+	return await db.update(schema.passwords).set({ hash: hashedPassword });
 }
 
 export async function signup({
