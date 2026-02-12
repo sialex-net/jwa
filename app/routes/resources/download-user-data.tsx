@@ -38,6 +38,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.leftJoin(schema.postImages, eq(schema.posts.id, schema.postImages.postId))
 		.innerJoin(schema.sessions, eq(schema.users.id, schema.sessions.userId));
 
+	client.close();
+
 	let domain = getDomainUrl(request);
 
 	let imagesData = userData
