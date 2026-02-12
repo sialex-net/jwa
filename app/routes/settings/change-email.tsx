@@ -41,6 +41,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.where(eq(schema.users.id, userId))
 		.get();
 
+	client.close();
+
 	if (!user) {
 		const params = new URLSearchParams({ redirectTo: request.url });
 		throw redirect(`/login?${params}`);
@@ -73,6 +75,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 	});
 
 	let result = await superRefined.safeParseAsync(submission.payload);
+
+	client.close();
 
 	if (!result.success) {
 		return data(

@@ -61,6 +61,8 @@ export async function handleVerification(
 		})
 		.get();
 
+	client.close();
+
 	void sendEmail(env, {
 		react: <EmailChangeNoticeEmail userId={user.id} />,
 		subject: 'Epic Stack email changed',
