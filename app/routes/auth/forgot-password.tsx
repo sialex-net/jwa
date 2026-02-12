@@ -55,6 +55,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 	let result = await superRefined.safeParseAsync(submission.payload);
 
 	if (!result.success) {
+		client.close();
 		return data(
 			{
 				result: report(submission, {
@@ -79,6 +80,8 @@ export async function action({ context, request }: Route.ActionArgs) {
 			),
 		)
 		.get();
+
+	client.close();
 
 	invariant(user, 'Not found');
 
