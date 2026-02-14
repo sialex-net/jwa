@@ -102,6 +102,9 @@ importers:
       '@types/node':
         specifier: ^24.10.9
         version: 24.10.9
+      '@types/qrcode':
+        specifier: ^1.5.6
+        version: 1.5.6
       '@types/react':
         specifier: ^19.2.10
         version: 19.2.10
@@ -2010,6 +2013,9 @@ packages:
 
   '@types/prismjs@1.26.5':
     resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
+
+  '@types/qrcode@1.5.6':
+    resolution: {integrity: sha512-te7NQcV2BOvdj2b1hCAHzAoMNuj65kNBMz0KBaxM6c3VGBOhU0dURQKOtH8CFNI/dsKkwlv32p26qYQTWoB5bw==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -5374,6 +5380,10 @@ snapshots:
       undici-types: 7.16.0
 
   '@types/prismjs@1.26.5': {}
+
+  '@types/qrcode@1.5.6':
+    dependencies:
+      '@types/node': 24.10.9
 
   '@types/react-dom@19.2.3(@types/react@19.2.10)':
     dependencies:
