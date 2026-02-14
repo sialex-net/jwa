@@ -136,6 +136,7 @@ export async function resetUserPassword({
 	return await db
 		.update(schema.passwords)
 		.set({ hash: hashedPassword })
+		.where(eq(schema.passwords.userId, user.id))
 		.finally(() => client.close());
 }
 
