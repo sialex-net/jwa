@@ -3,14 +3,18 @@ import { invariant } from '@epic-web/invariant';
 import { generateTOTP, verifyTOTP } from '@epic-web/totp';
 import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import { data } from 'react-router';
+import { data, redirect } from 'react-router';
 import { z } from 'zod';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { handleVerification as handleChangeEmailVerification } from '@/app/routes/settings/change-email.server';
 import { getDomainUrl } from '@/app/utils/get-domain-url';
 import * as schema from '@/data/drizzle/schema';
+import { twoFAVerificationType } from '../settings/two-factor/two-factor';
 import type { twoFAVerifyVerificationType } from '../settings/two-factor/verify';
-import { handleVerification as handleLoginTwoFactorVerification } from './login.server';
+import {
+	handleVerification as handleLoginTwoFactorVerification,
+	shouldRequestTwoFA,
+} from './login.server';
 import { handleVerification as handleOnboardingVerification } from './onboarding.server';
 import { handleVerification as handleResetPasswordVerification } from './reset-password.server';
 import type { VerificationTypes } from './verify';
@@ -46,6 +50,28 @@ export function getRedirectToUrl({
 		redirectToUrl.searchParams.set(redirectToQueryParam, redirectTo);
 	}
 	return redirectToUrl;
+}
+
+export async function requireRecentVerification(
+	env: Env,
+	{
+		request,
+		userId,
+	}: {
+		request: Request;
+		userId: string;
+	},
+) {
+	if (await shouldRequestTwoFA(env, { request, userId })) {
+		let reqUrl = new URL(request.url);
+		let redirectUrl = getRedirectToUrl({
+			redirectTo: reqUrl.pathname + reqUrl.search,
+			request,
+			target: userId,
+			type: twoFAVerificationType,
+		});
+		throw redirect(redirectUrl.toString());
+	}
 }
 
 export async function prepareVerification({

@@ -10,7 +10,10 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
-import { prepareVerification } from '@/app/routes/auth/verify.server';
+import {
+	prepareVerification,
+	requireRecentVerification,
+} from '@/app/routes/auth/verify.server';
 import { requireUserId } from '@/app/utils/auth.server';
 import { sendEmail } from '@/app/utils/email.server';
 import { EmailSchema } from '@/app/utils/user-validation';
@@ -32,6 +35,7 @@ const ChangeEmailSchema = z.object({
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
+	await requireRecentVerification(env, { request, userId });
 	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
 
@@ -44,7 +48,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 	client.close();
 
 	if (!user) {
-		const params = new URLSearchParams({ redirectTo: request.url });
+		let params = new URLSearchParams({ redirectTo: request.url });
 		throw redirect(`/login?${params}`);
 	}
 	return { user };
@@ -53,6 +57,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 export async function action({ context, request }: Route.ActionArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
+	await requireRecentVerification(env, { request, userId });
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
 
@@ -138,7 +143,6 @@ export default function Component({
 	actionData,
 	loaderData,
 }: Route.ComponentProps) {
-	let data = loaderData;
 	let { form, fields } = useForm(ChangeEmailSchema, {
 		id: 'change-email-form',
 		lastResult: actionData?.result,
@@ -151,7 +155,7 @@ export default function Component({
 				<p>You will receive an email at the new email address to confirm.</p>
 				<p>
 					An email notice will also be sent to your old address:{' '}
-					{data.user.email}.
+					{loaderData.user.email}.
 				</p>
 			</header>
 			<Form

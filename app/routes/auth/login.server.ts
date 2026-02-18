@@ -1,5 +1,5 @@
 import { invariant } from '@epic-web/invariant';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
@@ -8,7 +8,8 @@ import { sessionKey } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
-import { rememberKey, unverifiedSessionIdKey } from './login';
+import { twoFAVerificationType } from '../settings/two-factor/two-factor';
+import { rememberKey, unverifiedSessionIdKey, verifiedTimeKey } from './login';
 import type { VerifyFunctionArgs } from './verify.server';
 
 export async function handleVerification(
@@ -23,33 +24,82 @@ export async function handleVerification(
 		request.headers.get('cookie'),
 	);
 
-	let client = connectClientCf();
-	let db = drizzle({ client, logger: false, schema });
-	let session = await db
-		.select({ expirationDate: schema.sessions.expirationDate })
-		.from(schema.sessions)
-		.where(eq(schema.sessions.id, verifySession.get(unverifiedSessionIdKey)))
-		.get();
-	if (!session) {
-		throw redirect('/login');
-	}
-
-	cookieSession.set(sessionKey, verifySession.get(unverifiedSessionIdKey));
-
 	let remember = verifySession.get(rememberKey);
 	let { redirectTo } = result;
 
 	let headers = new Headers();
-	headers.append(
-		'set-cookie',
-		await getSessionStorage(env).commitSession(cookieSession, {
-			expires: remember ? session.expirationDate : undefined,
-		}),
-	);
+	cookieSession.set(verifiedTimeKey, Date.now());
+
+	let client = connectClientCf();
+	let db = drizzle({ client, logger: false, schema });
+	let unverifiedSessionId = verifySession.get(unverifiedSessionIdKey);
+	if (unverifiedSessionId) {
+		let session = await db
+			.select({ expirationDate: schema.sessions.expirationDate })
+			.from(schema.sessions)
+			.where(eq(schema.sessions.id, unverifiedSessionId))
+			.get();
+		if (!session) {
+			throw redirect('/login');
+		}
+		cookieSession.set(sessionKey, unverifiedSessionId);
+
+		headers.append(
+			'set-cookie',
+			await getSessionStorage(env).commitSession(cookieSession, {
+				expires: remember ? session.expirationDate : undefined,
+			}),
+		);
+	} else {
+		headers.append(
+			'set-cookie',
+			await getSessionStorage(env).commitSession(cookieSession),
+		);
+	}
+
 	headers.append(
 		'set-cookie',
 		await getVerifySessionStorage(env).destroySession(verifySession),
 	);
 
+	cookieSession.set(sessionKey, verifySession.get(unverifiedSessionIdKey));
+
 	return redirect(safeRedirect(redirectTo), { headers });
+}
+
+export async function shouldRequestTwoFA(
+	env: Env,
+	{
+		request,
+		userId,
+	}: {
+		request: Request;
+		userId: string;
+	},
+) {
+	let verifySession = await getVerifySessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+	if (verifySession.has(unverifiedSessionIdKey)) return true;
+	// if it's over two hours since they last verified, we should request 2FA again
+	let client = connectClientCf();
+	let db = drizzle({ client, logger: false, schema });
+
+	let userHasTwoFA = await db
+		.select({ id: schema.verifications.id })
+		.from(schema.verifications)
+		.where(
+			and(
+				eq(schema.verifications.target, userId),
+				eq(schema.verifications.type, twoFAVerificationType),
+			),
+		)
+		.get();
+	if (!userHasTwoFA) return false;
+	let cookieSession = await getSessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+	let verifiedTime = cookieSession.get(verifiedTimeKey) ?? new Date(0);
+	const twoHours = 1000 * 60 * 60 * 2;
+	return Date.now() - verifiedTime > twoHours;
 }

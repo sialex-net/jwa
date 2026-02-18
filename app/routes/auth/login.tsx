@@ -1,6 +1,4 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { and, eq } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/libsql';
 import { data, Form, Link, redirect, useSearchParams } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
@@ -11,17 +9,17 @@ import { Checkbox } from '@/app/components/ui/checkbox';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import { connectClientCf } from '@/app/middleware/libsql';
 import { login, requireAnonymous, sessionKey } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
-import * as schema from '@/data/drizzle/schema';
 import { twoFAVerificationType } from '../settings/two-factor/two-factor';
 import type { Route } from './+types/login';
+import { shouldRequestTwoFA } from './login.server';
 import { getRedirectToUrl } from './verify.server';
 
 export const unverifiedSessionIdKey = 'unverified-session-id';
 export const rememberKey = 'remember-me';
+export const verifiedTimeKey = 'verified-time';
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
@@ -81,22 +79,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { redirectTo, remember, session } = result.data;
 
-	let client = connectClientCf();
-	let db = drizzle({ client, logger: false, schema });
-
-	let verification = await db
-		.select({ id: schema.verifications.id })
-		.from(schema.verifications)
-		.where(
-			and(
-				eq(schema.verifications.target, session.userId),
-				eq(schema.verifications.type, twoFAVerificationType),
-			),
-		)
-		.get();
-	let userHasTwoFactor = Boolean(verification);
-
-	if (userHasTwoFactor) {
+	if (await shouldRequestTwoFA(env, { request, userId: session.userId })) {
 		let verifySession = await getVerifySessionStorage(env).getSession();
 		verifySession.set(unverifiedSessionIdKey, session.id);
 		verifySession.set(rememberKey, remember);
