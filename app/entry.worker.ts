@@ -18,13 +18,15 @@ class HonoRequestHandler extends WorkerEntrypoint<Env> {
 		super(ctx, env);
 		this.app = new Hono<AppEnv>();
 
-		this.app.use(async (c, next) => {
-			let auth = basicAuth({
-				password: c.env.BASIC_AUTH_PASSWORD,
-				username: c.env.BASIC_AUTH_USERNAME,
+		if (env.APP_ENV !== 'development') {
+			this.app.use(async (c, next) => {
+				let auth = basicAuth({
+					password: c.env.BASIC_AUTH_PASSWORD,
+					username: c.env.BASIC_AUTH_USERNAME,
+				});
+				return auth(c, next);
 			});
-			return auth(c, next);
-		});
+		}
 
 		if (import.meta.env.DEV) {
 			this.app.use(logger());
