@@ -29,6 +29,11 @@ export default [
 		route('password', './routes/settings/password.tsx'),
 		route('avatar', './routes/settings/avatar.tsx'),
 		route('change-email', './routes/settings/change-email.tsx'),
+		route('two-factor', './routes/settings/two-factor/two-factor.tsx', [
+			index('./routes/settings/two-factor/home.tsx'),
+			route('disable', './routes/settings/two-factor/disable.tsx'),
+			route('verify', './routes/settings/two-factor/verify.tsx'),
+		]),
 	]),
 	...prefix('resources', [
 		route('user-avatar/:imageId', './routes/resources/user-avatar/imageId.tsx'),

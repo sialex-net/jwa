@@ -15,7 +15,7 @@ export const targetQueryParam = 'target';
 export const typeQueryParam = 'type';
 export const redirectToQueryParam = 'redirectTo';
 
-const types = ['change-email', 'onboarding', 'reset-password'] as const;
+const types = ['2fa', 'change-email', 'onboarding', 'reset-password'] as const;
 const VerificationTypeSchema = z.enum(types);
 export type VerificationTypes = z.infer<typeof VerificationTypeSchema>;
 
@@ -47,7 +47,6 @@ export default function Component({
 	actionData,
 	loaderData,
 }: Route.ComponentProps) {
-	let data = loaderData;
 	let [searchParams] = useSearchParams();
 
 	let { form, fields } = useForm(VerifyFormSchema, {
@@ -58,7 +57,7 @@ export default function Component({
 			type: searchParams.get(typeQueryParam) ?? '',
 		},
 		id: 'verify-form',
-		lastResult: actionData?.result ?? data?.result,
+		lastResult: actionData?.result ?? loaderData?.result,
 		// TODO: disable data validation on client for now
 		// make better UX if code is too short/ long
 		onValidate: () => ({ error: null }),

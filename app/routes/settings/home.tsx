@@ -17,6 +17,7 @@ import { getSessionStorage } from '@/app/utils/sessions.server';
 import { UsernameSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
 import type { Route } from './+types/home';
+import { twoFAVerificationType } from './two-factor/two-factor';
 
 const ProfileFormSchema = z.object({
 	username: UsernameSchema,
@@ -45,7 +46,22 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		.innerJoin(schema.sessions, eq(schema.users.id, schema.sessions.userId));
 
 	invariantResponse(query, `userId ${userId} does not exist`, { status: 404 });
+	if (client.closed) {
+		client.reconnect();
+	}
+	let twoFactorVerification = await db
+		.select({ id: schema.verifications.id })
+		.from(schema.verifications)
+		.where(
+			and(
+				eq(schema.verifications.target, userId),
+				eq(schema.verifications.type, twoFAVerificationType),
+			),
+		)
+		.get();
+
 	return {
+		isTwoFAEnabled: Boolean(twoFactorVerification),
 		user: {
 			avatar: { ...query[0].userAvatar },
 			...query[0].users,
@@ -126,6 +142,15 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 						<Icon name="envelope-closed">
 							Change email from {loaderData.user.email}
 						</Icon>
+					</Link>
+				</div>
+				<div>
+					<Link to="two-factor">
+						{loaderData.isTwoFAEnabled ? (
+							<Icon name="lock-closed">2FA is enabled</Icon>
+						) : (
+							<Icon name="lock-open-1">Enable 2FA</Icon>
+						)}
 					</Link>
 				</div>
 				<div>

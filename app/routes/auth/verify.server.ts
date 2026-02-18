@@ -8,6 +8,7 @@ import { connectClientCf } from '@/app/middleware/libsql';
 import { handleVerification as handleChangeEmailVerification } from '@/app/routes/settings/change-email.server';
 import { getDomainUrl } from '@/app/utils/get-domain-url';
 import * as schema from '@/data/drizzle/schema';
+import type { twoFAVerifyVerificationType } from '../settings/two-factor/verify';
 import { handleVerification as handleOnboardingVerification } from './onboarding.server';
 import { handleVerification as handleResetPasswordVerification } from './reset-password.server';
 import type { VerificationTypes } from './verify';
@@ -102,7 +103,7 @@ export async function isCodeValid({
 }: {
 	code: string;
 	target: string;
-	type: VerificationTypes;
+	type: typeof twoFAVerifyVerificationType | VerificationTypes;
 }) {
 	let client = connectClientCf();
 	let db = drizzle({ client, logger: false, schema });
@@ -197,6 +198,9 @@ export async function validateRequest(
 	client.close();
 
 	switch (result.data[typeQueryParam]) {
+		case '2fa': {
+			throw new Error('not yet implemented');
+		}
 		case 'change-email': {
 			return handleChangeEmailVerification(env, {
 				body,
