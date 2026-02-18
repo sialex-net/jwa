@@ -1,6 +1,7 @@
 import { useForm } from '@conform-to/react/future';
 import { Form, useSearchParams } from 'react-router';
 import { z } from 'zod';
+import { GeneralErrorBoundary } from '@/app/components/error-boundary';
 import { ErrorList } from '@/app/components/forms';
 import { Spacer } from '@/app/components/spacer';
 import { Button } from '@/app/components/ui/button';
@@ -48,13 +49,37 @@ export default function Component({
 	loaderData,
 }: Route.ComponentProps) {
 	let [searchParams] = useSearchParams();
+	let type = VerificationTypeSchema.parse(searchParams.get(typeQueryParam));
+
+	let checkEmail = (
+		<>
+			<h1 className="text-h1">Check your email</h1>
+			<p className="mt-3 text-body-md text-muted-foreground">
+				We've sent you a code to verify your email address.
+			</p>
+		</>
+	);
+
+	let headings: Record<VerificationTypes, React.ReactNode> = {
+		'2fa': (
+			<>
+				<h1 className="text-h1">Check your 2FA app</h1>
+				<p className="mt-3 text-body-md text-muted-foreground">
+					Please enter your 2FA code to verify your identity.
+				</p>
+			</>
+		),
+		'change-email': checkEmail,
+		onboarding: checkEmail,
+		'reset-password': checkEmail,
+	};
 
 	let { form, fields } = useForm(VerifyFormSchema, {
 		defaultValue: {
 			code: searchParams.get(codeQueryParam) ?? '',
 			redirectTo: searchParams.get(redirectToQueryParam) ?? '',
 			target: searchParams.get(targetQueryParam) ?? '',
-			type: searchParams.get(typeQueryParam) ?? '',
+			type,
 		},
 		id: 'verify-form',
 		lastResult: actionData?.result ?? loaderData?.result,
@@ -65,12 +90,7 @@ export default function Component({
 
 	return (
 		<div className="container flex flex-col justify-center pt-20 pb-32">
-			<div className="text-center">
-				<h1 className="text-h1">Check your email</h1>
-				<p className="mt-3 text-body-md text-muted-foreground">
-					We've sent you a code to verify your email address.
-				</p>
-			</div>
+			<div className="text-center">{headings[type]}</div>
 
 			<Spacer size="xs" />
 
@@ -148,4 +168,8 @@ export default function Component({
 			</div>
 		</div>
 	);
+}
+
+export function ErrorBoundary() {
+	return <GeneralErrorBoundary />;
 }

@@ -108,6 +108,7 @@ export async function login({
 		.returning({
 			expirationDate: schema.sessions.expirationDate,
 			id: schema.sessions.id,
+			userId: schema.sessions.userId,
 		})
 		.get();
 	client.close();

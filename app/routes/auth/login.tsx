@@ -1,4 +1,6 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
+import { and, eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/libsql';
 import { data, Form, Link, redirect, useSearchParams } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
@@ -9,9 +11,17 @@ import { Checkbox } from '@/app/components/ui/checkbox';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
+import { connectClientCf } from '@/app/middleware/libsql';
 import { login, requireAnonymous, sessionKey } from '@/app/utils/auth.server';
 import { getSessionStorage } from '@/app/utils/sessions.server';
+import { getVerifySessionStorage } from '@/app/utils/verification.server';
+import * as schema from '@/data/drizzle/schema';
+import { twoFAVerificationType } from '../settings/two-factor/two-factor';
 import type { Route } from './+types/login';
+import { getRedirectToUrl } from './verify.server';
+
+export const unverifiedSessionIdKey = 'unverified-session-id';
+export const rememberKey = 'remember-me';
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
@@ -71,19 +81,54 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { redirectTo, remember, session } = result.data;
 
-	let cookieSession = await getSessionStorage(env).getSession(
-		request.headers.get('cookie'),
-	);
+	let client = connectClientCf();
+	let db = drizzle({ client, logger: false, schema });
 
-	cookieSession.set(sessionKey, session.id);
+	let verification = await db
+		.select({ id: schema.verifications.id })
+		.from(schema.verifications)
+		.where(
+			and(
+				eq(schema.verifications.target, session.userId),
+				eq(schema.verifications.type, twoFAVerificationType),
+			),
+		)
+		.get();
+	let userHasTwoFactor = Boolean(verification);
 
-	return redirect(safeRedirect(redirectTo), {
-		headers: {
-			'set-cookie': await getSessionStorage(env).commitSession(cookieSession, {
-				expires: remember ? session.expirationDate : undefined,
-			}),
-		},
-	});
+	if (userHasTwoFactor) {
+		let verifySession = await getVerifySessionStorage(env).getSession();
+		verifySession.set(unverifiedSessionIdKey, session.id);
+		verifySession.set(rememberKey, remember);
+		let redirectUrl = getRedirectToUrl({
+			request,
+			target: session.userId,
+			type: twoFAVerificationType,
+		});
+		return redirect(redirectUrl.toString(), {
+			headers: {
+				'set-cookie':
+					await getVerifySessionStorage(env).commitSession(verifySession),
+			},
+		});
+	} else {
+		let cookieSession = await getSessionStorage(env).getSession(
+			request.headers.get('cookie'),
+		);
+
+		cookieSession.set(sessionKey, session.id);
+
+		return redirect(safeRedirect(redirectTo), {
+			headers: {
+				'set-cookie': await getSessionStorage(env).commitSession(
+					cookieSession,
+					{
+						expires: remember ? session.expirationDate : undefined,
+					},
+				),
+			},
+		});
+	}
 }
 
 export default function Component({ actionData }: Route.ComponentProps) {

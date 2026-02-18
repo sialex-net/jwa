@@ -1,4 +1,5 @@
 import { parseSubmission, report } from '@conform-to/react/future';
+import { invariant } from '@epic-web/invariant';
 import { generateTOTP, verifyTOTP } from '@epic-web/totp';
 import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
@@ -9,6 +10,7 @@ import { handleVerification as handleChangeEmailVerification } from '@/app/route
 import { getDomainUrl } from '@/app/utils/get-domain-url';
 import * as schema from '@/data/drizzle/schema';
 import type { twoFAVerifyVerificationType } from '../settings/two-factor/verify';
+import { handleVerification as handleLoginTwoFactorVerification } from './login.server';
 import { handleVerification as handleOnboardingVerification } from './onboarding.server';
 import { handleVerification as handleResetPasswordVerification } from './reset-password.server';
 import type { VerificationTypes } from './verify';
@@ -184,24 +186,33 @@ export async function validateRequest(
 		);
 	}
 
-	if (client?.closed) {
-		client.reconnect();
+	// TODO: make result.data a param
+	async function deleteVerification() {
+		if (client.closed) {
+			client.reconnect();
+		}
+		invariant(result.data, 'result.data should be defined');
+		await db
+			.delete(schema.verifications)
+			.where(
+				and(
+					eq(schema.verifications.target, result.data[targetQueryParam]),
+					eq(schema.verifications.type, result.data[typeQueryParam]),
+				),
+			);
+		client.close();
 	}
-	await db
-		.delete(schema.verifications)
-		.where(
-			and(
-				eq(schema.verifications.target, result.data[targetQueryParam]),
-				eq(schema.verifications.type, result.data[typeQueryParam]),
-			),
-		);
-	client.close();
 
 	switch (result.data[typeQueryParam]) {
 		case '2fa': {
-			throw new Error('not yet implemented');
+			return handleLoginTwoFactorVerification(env, {
+				body,
+				request,
+				result: result.data,
+			});
 		}
 		case 'change-email': {
+			await deleteVerification();
 			return handleChangeEmailVerification(env, {
 				body,
 				request,
@@ -209,6 +220,7 @@ export async function validateRequest(
 			});
 		}
 		case 'onboarding': {
+			await deleteVerification();
 			return handleOnboardingVerification(env, {
 				body,
 				request,
@@ -216,6 +228,7 @@ export async function validateRequest(
 			});
 		}
 		case 'reset-password': {
+			await deleteVerification();
 			return handleResetPasswordVerification(env, {
 				body,
 				request,
