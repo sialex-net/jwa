@@ -132,6 +132,21 @@ let verifications = t.sqliteTable(
 	(table) => [t.unique().on(table.target, table.type)],
 );
 
+let connections = t.sqliteTable(
+	'connections',
+	{
+		id,
+		providerId: t.text('provider_id').notNull(),
+		providerName: t.text('provider_name').notNull(),
+		userId: t
+			.text('user_id')
+			.notNull()
+			.references((): AnySQLiteColumn => users.id, { onDelete: 'cascade' }),
+		...timestamps,
+	},
+	(table) => [t.unique().on(table.providerName, table.providerId)],
+);
+
 type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
@@ -139,6 +154,7 @@ type SelectPassword = typeof passwords.$inferSelect;
 export type { SelectPassword, SelectUser };
 
 export {
+	connections,
 	passwords,
 	permissions,
 	postImages,
