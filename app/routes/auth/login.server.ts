@@ -11,6 +11,55 @@ import * as schema from '@/data/drizzle/schema';
 import { twoFAVerificationType } from '../settings/two-factor/two-factor';
 import { rememberKey, unverifiedSessionIdKey, verifiedTimeKey } from './login';
 import type { VerifyFunctionArgs } from './verify.server';
+import { getRedirectToUrl } from './verify.server';
+
+export async function handleNewSession(
+	env: Env,
+	{
+		request,
+		session,
+		redirectTo,
+		remember = false,
+	}: {
+		redirectTo?: string;
+		remember?: boolean;
+		request: Request;
+		session: { expirationDate: Date; id: string; userId: string };
+	},
+) {
+	if (await shouldRequestTwoFA(env, { request, userId: session.userId })) {
+		let verifySession = await getVerifySessionStorage(env).getSession();
+		verifySession.set(unverifiedSessionIdKey, session.id);
+		verifySession.set(rememberKey, remember);
+		let redirectUrl = getRedirectToUrl({
+			request,
+			target: session.userId,
+			type: twoFAVerificationType,
+		});
+		return redirect(redirectUrl.toString(), {
+			headers: {
+				'set-cookie':
+					await getVerifySessionStorage(env).commitSession(verifySession),
+			},
+		});
+	} else {
+		let cookieSession = await getSessionStorage(env).getSession(
+			request.headers.get('cookie'),
+		);
+		cookieSession.set(sessionKey, session.id);
+
+		return redirect(safeRedirect(redirectTo), {
+			headers: {
+				'set-cookie': await getSessionStorage(env).commitSession(
+					cookieSession,
+					{
+						expires: remember ? session.expirationDate : undefined,
+					},
+				),
+			},
+		});
+	}
+}
 
 export async function handleVerification(
 	env: Env,

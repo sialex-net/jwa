@@ -61,6 +61,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 		let r = ProviderNameSchema.safeParse(connection.providerName);
 		if (!r.success) continue;
 		let connectionData = await resolveConnectionData(
+			env,
 			r.data,
 			connection.providerId,
 		);

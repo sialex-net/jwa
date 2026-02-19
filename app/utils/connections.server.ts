@@ -22,8 +22,9 @@ export let providers: Record<ProviderName, AuthProvider> = {
 };
 
 export function resolveConnectionData(
+	env: Env,
 	providerName: ProviderName,
 	providerId: string,
 ) {
-	return providers[providerName].resolveConnectionData(providerId);
+	return providers[providerName].resolveConnectionData(env, providerId);
 }

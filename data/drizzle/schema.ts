@@ -147,11 +147,13 @@ let connections = t.sqliteTable(
 	(table) => [t.unique().on(table.providerName, table.providerId)],
 );
 
+type SelectConnection = typeof connections.$inferSelect;
+
 type SelectUser = typeof users.$inferSelect;
 
 type SelectPassword = typeof passwords.$inferSelect;
 
-export type { SelectPassword, SelectUser };
+export type { SelectConnection, SelectPassword, SelectUser };
 
 export {
 	connections,

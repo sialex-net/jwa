@@ -5,17 +5,23 @@ import { redirect } from 'react-router';
 import { Authenticator } from 'remix-auth';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import z from 'zod';
-import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
+import type {
+	SelectConnection,
+	SelectPassword,
+	SelectUser,
+} from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import { connectClientCf } from '../middleware/libsql';
+import type { ProviderName } from './connections';
 import { getConnectionSessionStorage, providers } from './connections.server';
+import { downloadFile } from './download-file';
 import { combineResponseInits } from './http';
 import type { ProviderUser } from './providers/provider';
 import { getSessionStorage } from './sessions.server';
 
 const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;
 
-let getSessionExpirationDate = () =>
+export let getSessionExpirationDate = () =>
 	new Date(Date.now() + SESSION_EXPIRATION_TIME);
 
 export let sessionKey = 'sessionId';
@@ -195,6 +201,58 @@ export async function signup({
 		})
 		.get();
 	client.close();
+	return session;
+}
+
+export async function signupWithConnection({
+	email,
+	username,
+	providerId,
+	providerName,
+	imageUrl,
+}: {
+	email: SelectUser['email'];
+	imageUrl?: string;
+	providerId: SelectConnection['providerId'];
+	providerName: ProviderName;
+	username: SelectUser['username'];
+}) {
+	let client = connectClientCf();
+	let db = drizzle(client, { logger: false, schema });
+	let user = await db
+		.insert(schema.users)
+		.values({ email: email.toLowerCase(), username: username.toLowerCase() })
+		.returning({ id: schema.users.id })
+		.get();
+	let userRole = await db
+		.select({ id: schema.roles.id })
+		.from(schema.roles)
+		.where(eq(schema.roles.name, 'user'))
+		.get();
+	if (userRole) {
+		await db
+			.insert(schema.usersToRoles)
+			.values({ roleId: userRole.id, userId: user.id });
+	}
+	await db
+		.insert(schema.connections)
+		.values({ providerId, providerName, userId: user.id });
+	let imageFile = imageUrl ? await downloadFile(imageUrl) : undefined;
+	await db.insert(schema.userAvatar).values({
+		altText: `Avatar for ${username}`,
+		blob: imageFile?.blob,
+		contentType: imageFile?.contentType,
+		userId: user.id,
+	});
+	let session = await db
+		.insert(schema.sessions)
+		.values({ expirationDate: getSessionExpirationDate(), userId: user.id })
+		.returning({
+			expirationDate: schema.sessions.expirationDate,
+			id: schema.sessions.id,
+		})
+		.get();
+
 	return session;
 }
 

@@ -10,7 +10,10 @@ export type ProviderUser = {
 
 export interface AuthProvider {
 	getAuthStrategy(): Strategy<ProviderUser, any>;
-	resolveConnectionData(providerId: string): Promise<{
+	resolveConnectionData(
+		env: Env,
+		providerId: string,
+	): Promise<{
 		displayName: string;
 		link?: null | string;
 	}>;

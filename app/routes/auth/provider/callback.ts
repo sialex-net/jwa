@@ -3,9 +3,20 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
-import { getAuthenticator, getUserId } from '@/app/utils/auth.server';
+import {
+	getAuthenticator,
+	getSessionExpirationDate,
+	getUserId,
+} from '@/app/utils/auth.server';
 import { ProviderNameSchema, providerLabels } from '@/app/utils/connections';
+import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
+import { handleNewSession } from '../login.server';
+import {
+	onboardingEmailSessionKey,
+	prefilledProfileKey,
+	providerIdKey,
+} from '../onboarding/provider';
 import type { Route } from './+types/callback';
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
@@ -50,5 +61,39 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		throw redirect('/settings/connections');
 	}
 
-	throw redirect('/login');
+	if (existingConnection) {
+		let session = await db
+			.insert(schema.sessions)
+			.values({
+				expirationDate: getSessionExpirationDate(),
+				userId: existingConnection.userId,
+			})
+			.returning({
+				expirationDate: schema.sessions.expirationDate,
+				id: schema.sessions.id,
+				userId: schema.sessions.userId,
+			})
+			.get();
+		return handleNewSession(env, { remember: true, request, session });
+	}
+
+	let verifySession = await getVerifySessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+	verifySession.set(onboardingEmailSessionKey, profile.email);
+	verifySession.set(prefilledProfileKey, {
+		...profile,
+		username: profile.username
+			?.replace(/[^a-zA-Z0-9_]/g, '_')
+			.toLowerCase()
+			.slice(0, 20)
+			.padEnd(3, '_'),
+	});
+	verifySession.set(providerIdKey, profile.id);
+	return redirect(`/onboarding/${providerName}`, {
+		headers: {
+			'set-cookie':
+				await getVerifySessionStorage(env).commitSession(verifySession),
+		},
+	});
 }

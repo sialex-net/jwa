@@ -36,9 +36,14 @@ export class GitHubProvider implements AuthProvider {
 		);
 	}
 
-	async resolveConnectionData(providerId: string) {
+	async resolveConnectionData(env: Env, providerId: string) {
 		let response = await fetch(`https://api.github.com/user/${providerId}`, {
-			headers: { Authorization: `token ${process.env.GITHUB_TOKEN}` },
+			headers: {
+				Accept: 'application/vnd.github+json',
+				Authorization: `token ${env.GITHUB_TOKEN}`,
+				'User-Agent': 'sialex-net',
+				'X-GitHub-Api-Version': '2022-11-28',
+			},
 		});
 		let rawJson = await response.json();
 		let result = GitHubUserSchema.safeParse(rawJson);

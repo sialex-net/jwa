@@ -1,8 +1,7 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { invariant } from '@epic-web/invariant';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
-import type { MetaFunction, Params } from 'react-router';
+import type { MetaFunction } from 'react-router';
 import { data, Form, redirect, useSearchParams } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
@@ -16,18 +15,18 @@ import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import {
 	getAuthenticator,
-	requireAnonymous,
 	sessionKey,
+	signupWithConnection,
 } from '@/app/utils/auth.server';
-import { ProviderNameSchema } from '@/app/utils/connections';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import { UsernameSchema } from '@/app/utils/user-validation';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
-import type { VerifyFunctionArgs } from '../verify.server';
 import type { Route } from './+types/provider';
+import { requireData } from './provider.server';
 
 export const onboardingEmailSessionKey = 'onboardingEmail';
+export const prefilledProfileKey = 'prefilledProfile';
 export const providerIdKey = 'providerId';
 
 const SignupFormSchema = z.object({
@@ -47,37 +46,6 @@ const SignupFormSchema = z.object({
 	username: UsernameSchema,
 });
 
-async function requireData(
-	env: Env,
-	{
-		params,
-		request,
-	}: {
-		params: Params;
-		request: Request;
-	},
-) {
-	await requireAnonymous(env, request);
-	let verifySession = await getVerifySessionStorage(env).getSession(
-		request.headers.get('cookie'),
-	);
-	let email = verifySession.get(onboardingEmailSessionKey);
-	let providerId = verifySession.get(providerIdKey);
-	let result = z
-		.object({
-			email: z.string(),
-			providerId: z.string(),
-			providerName: ProviderNameSchema,
-		})
-		.safeParse({ email, providerId, providerName: params.provider });
-	if (result.success) {
-		return result.data;
-	} else {
-		console.error(result.error);
-		throw redirect('/signup');
-	}
-}
-
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 
@@ -85,6 +53,10 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 	let cookieSession = await getSessionStorage(env).getSession(
 		request.headers.get('cookie'),
 	);
+	let verifySession = await getVerifySessionStorage(env).getSession(
+		request.headers.get('cookie'),
+	);
+	let prefilledProfile = verifySession.get(prefilledProfileKey);
 
 	let formError = cookieSession.get(getAuthenticator(env).sessionErrorKey);
 
@@ -99,7 +71,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 				submission: {
 					fields: [],
 					intent: null,
-					payload: {},
+					payload: prefilledProfile ?? {},
 				},
 			},
 		},
@@ -139,13 +111,12 @@ export async function action({ context, params, request }: Route.ActionArgs) {
 			return;
 		}
 	}).transform(async (data) => {
-		console.log('TODO: implement third party onboarding', {
+		let session = await signupWithConnection({
 			...data,
 			email,
 			providerId,
 			providerName,
 		});
-		let session = { expirationDate: new Date(), id: 'TODO' };
 		return { ...data, session };
 	});
 
@@ -183,23 +154,6 @@ export async function action({ context, params, request }: Route.ActionArgs) {
 	);
 
 	return redirect(safeRedirect(redirectTo), { headers });
-}
-
-export async function handleVerification(
-	env: Env,
-	{ request, result }: VerifyFunctionArgs,
-) {
-	invariant(result, 'result should be defined by now');
-	let verifySession = await getVerifySessionStorage(env).getSession(
-		request.headers.get('cookie'),
-	);
-	verifySession.set(onboardingEmailSessionKey, result.target);
-	return redirect('/onboarding', {
-		headers: {
-			'set-cookie':
-				await getVerifySessionStorage(env).commitSession(verifySession),
-		},
-	});
 }
 
 export const meta: MetaFunction = () => {

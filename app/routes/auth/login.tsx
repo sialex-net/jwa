@@ -1,6 +1,5 @@
 import { parseSubmission, report, useForm } from '@conform-to/react/future';
-import { data, Form, Link, redirect, useSearchParams } from 'react-router';
-import { safeRedirect } from 'remix-utils/safe-redirect';
+import { data, Form, Link, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
 import { Spacer } from '@/app/components/spacer';
@@ -9,14 +8,10 @@ import { Checkbox } from '@/app/components/ui/checkbox';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
-import { login, requireAnonymous, sessionKey } from '@/app/utils/auth.server';
+import { login, requireAnonymous } from '@/app/utils/auth.server';
 import { ProviderConnectionForm } from '@/app/utils/connections';
-import { getSessionStorage } from '@/app/utils/sessions.server';
-import { getVerifySessionStorage } from '@/app/utils/verification.server';
-import { twoFAVerificationType } from '../settings/two-factor/two-factor';
 import type { Route } from './+types/login';
-import { shouldRequestTwoFA } from './login.server';
-import { getRedirectToUrl } from './verify.server';
+import { handleNewSession } from './login.server';
 
 export const unverifiedSessionIdKey = 'unverified-session-id';
 export const rememberKey = 'remember-me';
@@ -80,46 +75,14 @@ export async function action({ context, request }: Route.ActionArgs) {
 
 	let { redirectTo, remember, session } = result.data;
 
-	if (await shouldRequestTwoFA(env, { request, userId: session.userId })) {
-		let verifySession = await getVerifySessionStorage(env).getSession();
-		verifySession.set(unverifiedSessionIdKey, session.id);
-		verifySession.set(rememberKey, remember);
-		let redirectUrl = getRedirectToUrl({
-			request,
-			target: session.userId,
-			type: twoFAVerificationType,
-		});
-		return redirect(redirectUrl.toString(), {
-			headers: {
-				'set-cookie':
-					await getVerifySessionStorage(env).commitSession(verifySession),
-			},
-		});
-	} else {
-		let cookieSession = await getSessionStorage(env).getSession(
-			request.headers.get('cookie'),
-		);
-
-		cookieSession.set(sessionKey, session.id);
-
-		return redirect(safeRedirect(redirectTo), {
-			headers: {
-				'set-cookie': await getSessionStorage(env).commitSession(
-					cookieSession,
-					{
-						expires: remember ? session.expirationDate : undefined,
-					},
-				),
-			},
-		});
-	}
+	return handleNewSession(env, { redirectTo, remember, request, session });
 }
 
 export default function Component({ actionData }: Route.ComponentProps) {
 	let [searchParams] = useSearchParams();
 	let redirectTo = searchParams.get('redirectTo');
 
-	let { form, fields } = useForm(LoginSchema, {
+	let { fields, form } = useForm(LoginSchema, {
 		defaultValue: {
 			redirectTo,
 		},
