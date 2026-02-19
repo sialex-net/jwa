@@ -12,6 +12,11 @@ export default [
 	route('forgot-password', './routes/auth/forgot-password.tsx'),
 	route('reset-password', './routes/auth/reset-password.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
+	...prefix('auth', [
+		route('github', './routes/auth/github/github.ts', [
+			route('callback', './routes/auth/github/callback.ts'),
+		]),
+	]),
 	route('users', './routes/users/users.tsx', [
 		index('./routes/users/home.tsx'),
 		...prefix(':username', [

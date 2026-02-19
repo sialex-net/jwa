@@ -10,6 +10,7 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { login, requireAnonymous, sessionKey } from '@/app/utils/auth.server';
+import { ProviderConnectionForm } from '@/app/utils/connections';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import { twoFAVerificationType } from '../settings/two-factor/two-factor';
@@ -256,7 +257,12 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					</Button>
 				</div>
 			</Form>
-			<Spacer size="xs" />
+			<div className="mt-5 flex flex-col gap-5 border-border border-t-2 border-b-2 py-3">
+				<ProviderConnectionForm
+					providerName="github"
+					type="Login"
+				/>
+			</div>
 			<p>
 				New User?{' '}
 				<Link

@@ -2,11 +2,14 @@ import { compare, genSalt, hash } from 'bcrypt-ts/browser';
 import { and, eq, gt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
+import { Authenticator } from 'remix-auth';
+import { GitHubStrategy } from 'remix-auth-github';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import z from 'zod';
 import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import { connectClientCf } from '../middleware/libsql';
+import { getConnectionSessionStorage } from './connections.server';
 import { combineResponseInits } from './http';
 import { getSessionStorage } from './sessions.server';
 
@@ -16,6 +19,47 @@ let getSessionExpirationDate = () =>
 	new Date(Date.now() + SESSION_EXPIRATION_TIME);
 
 export let sessionKey = 'sessionId';
+
+type ProviderUser = {
+	email: string;
+	id: string;
+	imageUrl?: string;
+	name?: string;
+	username?: string;
+};
+export function getAuthenticator(env: Env) {
+	let authenticator = new Authenticator<ProviderUser>(
+		getConnectionSessionStorage(env),
+	);
+
+	authenticator.use(
+		new GitHubStrategy(
+			{
+				callbackURL: '/auth/github/callback',
+				clientID: env.GITHUB_CLIENT_ID,
+				clientSecret: env.GITHUB_CLIENT_SECRET,
+			},
+			async ({ profile }) => {
+				let email = profile.emails[0].value.trim().toLowerCase();
+				if (!email) {
+					throw redirect('/login');
+				}
+				let username = profile.displayName;
+				let imageUrl = profile.photos[0].value;
+				return {
+					email,
+					id: profile.id,
+					imageUrl,
+					name: profile.name.givenName,
+					username,
+				};
+			},
+		),
+		'github',
+	);
+
+	return authenticator;
+}
 
 export async function getUserId(env: Env, request: Request) {
 	let cookieSession = await getSessionStorage(env).getSession(
