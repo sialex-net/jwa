@@ -13,6 +13,7 @@ import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { requireAnonymous } from '@/app/utils/auth.server';
+import { ProviderConnectionForm } from '@/app/utils/connections';
 import { sendEmail } from '@/app/utils/email.server';
 import { EmailSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
@@ -237,6 +238,12 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					</Button>
 				</div>
 			</Form>
+			<div className="mt-5 flex flex-col gap-5 border-border border-t-2 border-b-2 py-3">
+				<ProviderConnectionForm
+					providerName="github"
+					type="Signup"
+				/>
+			</div>
 			<Spacer size="xs" />
 			<p>
 				Already have an account?{' '}

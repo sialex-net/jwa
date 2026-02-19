@@ -3,14 +3,14 @@ import { and, eq, gt } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { redirect } from 'react-router';
 import { Authenticator } from 'remix-auth';
-import { GitHubStrategy } from 'remix-auth-github';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import z from 'zod';
 import type { SelectPassword, SelectUser } from '@/data/drizzle/schema';
 import * as schema from '@/data/drizzle/schema';
 import { connectClientCf } from '../middleware/libsql';
-import { getConnectionSessionStorage } from './connections.server';
+import { getConnectionSessionStorage, providers } from './connections.server';
 import { combineResponseInits } from './http';
+import type { ProviderUser } from './providers/provider';
 import { getSessionStorage } from './sessions.server';
 
 const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 14;
@@ -20,43 +20,14 @@ let getSessionExpirationDate = () =>
 
 export let sessionKey = 'sessionId';
 
-type ProviderUser = {
-	email: string;
-	id: string;
-	imageUrl?: string;
-	name?: string;
-	username?: string;
-};
 export function getAuthenticator(env: Env) {
 	let authenticator = new Authenticator<ProviderUser>(
 		getConnectionSessionStorage(env),
 	);
 
-	authenticator.use(
-		new GitHubStrategy(
-			{
-				callbackURL: '/auth/github/callback',
-				clientID: env.GITHUB_CLIENT_ID,
-				clientSecret: env.GITHUB_CLIENT_SECRET,
-			},
-			async ({ profile }) => {
-				let email = profile.emails[0].value.trim().toLowerCase();
-				if (!email) {
-					throw redirect('/login');
-				}
-				let username = profile.displayName;
-				let imageUrl = profile.photos[0].value;
-				return {
-					email,
-					id: profile.id,
-					imageUrl,
-					name: profile.name.givenName,
-					username,
-				};
-			},
-		),
-		'github',
-	);
+	for (let [providerName, provider] of Object.entries(providers)) {
+		authenticator.use(provider.getAuthStrategy(), providerName);
+	}
 
 	return authenticator;
 }
@@ -246,7 +217,7 @@ export async function logout(
 	if (sessionId) {
 		let client = connectClientCf();
 		let db = drizzle(client, { logger: false, schema });
-		await db
+		void db
 			.delete(schema.sessions)
 			.where(eq(schema.sessions.id, sessionId))
 			.catch(() => {})

@@ -8,13 +8,14 @@ export default [
 	route('logout', './routes/auth/logout.tsx'),
 	route('signup', './routes/auth/signup.tsx'),
 	route('onboarding', './routes/auth/onboarding.tsx'),
+	route('onboarding/:provider', './routes/auth/onboarding/provider.tsx'),
 	route('verify', './routes/auth/verify.tsx'),
 	route('forgot-password', './routes/auth/forgot-password.tsx'),
 	route('reset-password', './routes/auth/reset-password.tsx'),
 	route('theme-switch', './routes/theme-switch.tsx'),
 	...prefix('auth', [
-		route('github', './routes/auth/github/github.ts', [
-			route('callback', './routes/auth/github/callback.ts'),
+		route(':provider', './routes/auth/provider/provider.ts', [
+			route('callback', './routes/auth/provider/callback.ts'),
 		]),
 	]),
 	route('users', './routes/users/users.tsx', [
@@ -34,6 +35,7 @@ export default [
 		route('password', './routes/settings/password.tsx'),
 		route('avatar', './routes/settings/avatar.tsx'),
 		route('change-email', './routes/settings/change-email.tsx'),
+		route('connections', './routes/settings/connections.tsx'),
 		route('two-factor', './routes/settings/two-factor/two-factor.tsx', [
 			index('./routes/settings/two-factor/home.tsx'),
 			route('disable', './routes/settings/two-factor/disable.tsx'),

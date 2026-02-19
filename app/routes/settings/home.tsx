@@ -159,6 +159,11 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					</Link>
 				</div>
 				<div>
+					<Link to="connections">
+						<Icon name="link-2">Manage connections</Icon>
+					</Link>
+				</div>
+				<div>
 					<a
 						download="john-wicki-user-data.json"
 						href="/resources/download-user-data"
