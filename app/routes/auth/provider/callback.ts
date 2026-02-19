@@ -9,6 +9,11 @@ import {
 	getUserId,
 } from '@/app/utils/auth.server';
 import { ProviderNameSchema, providerLabels } from '@/app/utils/connections';
+import { combineHeaders, combineResponseInits } from '@/app/utils/http';
+import {
+	destroyRedirectToHeader,
+	getRedirectCookieValue,
+} from '@/app/utils/redirect-cookie.server';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
 import { handleNewSession } from '../login.server';
@@ -19,9 +24,12 @@ import {
 } from '../onboarding/provider';
 import type { Route } from './+types/callback';
 
+let destroyRedirectTo = { 'set-cookie': destroyRedirectToHeader };
+
 export async function loader({ context, params, request }: Route.LoaderArgs) {
 	let providerName = ProviderNameSchema.parse(params.provider);
 
+	let redirectTo = getRedirectCookieValue(request);
 	let label = providerLabels[providerName];
 
 	let { env } = getContext(context, appContext);
@@ -30,7 +38,13 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		.authenticate(providerName, request, { throwOnError: true })
 		.catch(async (error) => {
 			console.error(error);
-			throw redirect('/login');
+			let loginRedirect = [
+				'/login',
+				redirectTo ? new URLSearchParams({ redirectTo }) : null,
+			]
+				.filter(Boolean)
+				.join('?');
+			throw redirect(loginRedirect, { headers: destroyRedirectTo });
 		});
 
 	let client = connectClientCf();
@@ -58,7 +72,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 			title: 'Already Connected',
 		};
 		console.log(connections);
-		throw redirect('/settings/connections');
+		throw redirect('/settings/connections', { headers: destroyRedirectTo });
 	}
 
 	// If we're already logged in, then link the account
@@ -77,12 +91,16 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 			type: 'success',
 		};
 		console.log(consoleMsg);
-		throw redirect('/settings/connections');
+		throw redirect('/settings/connections', { headers: destroyRedirectTo });
 	}
 
 	// Connection exists already? Make a new session
 	if (existingConnection) {
-		return makeSession(env, { request, userId: existingConnection.userId });
+		return makeSession(env, {
+			redirectTo,
+			request,
+			userId: existingConnection.userId,
+		});
 	}
 
 	// if the email matches a user in the db, then link the account and
@@ -103,7 +121,7 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 		});
 		return makeSession(env, {
 			// send them to the connections page to see their new connection
-			redirectTo: '/settings/connections',
+			redirectTo: redirectTo ?? '/settings/connections',
 			request,
 			userId: user.id,
 		});
@@ -122,11 +140,20 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
 			.padEnd(3, '_'),
 	});
 	verifySession.set(providerIdKey, profile.id);
-	return redirect(`/onboarding/${providerName}`, {
-		headers: {
-			'set-cookie':
-				await getVerifySessionStorage(env).commitSession(verifySession),
-		},
+	let onboardingRedirect = [
+		`/onboarding/${providerName}`,
+		redirectTo ? new URLSearchParams({ redirectTo }) : null,
+	]
+		.filter(Boolean)
+		.join('?');
+	return redirect(onboardingRedirect, {
+		headers: combineHeaders(
+			{
+				'set-cookie':
+					await getVerifySessionStorage(env).commitSession(verifySession),
+			},
+			destroyRedirectTo,
+		),
 	});
 }
 
@@ -157,6 +184,6 @@ async function makeSession(
 	return handleNewSession(
 		env,
 		{ redirectTo, remember: true, request, session },
-		responseInit,
+		combineResponseInits({ headers: destroyRedirectTo }, responseInit),
 	);
 }

@@ -59,8 +59,17 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 			),
 		)
 		.get();
+	if (client.closed) {
+		client.reconnect();
+	}
+	let password = await db
+		.select({ userId: schema.passwords.userId })
+		.from(schema.passwords)
+		.where(eq(schema.passwords.userId, userId))
+		.get();
 
 	return {
+		hasPassword: Boolean(password),
 		isTwoFAEnabled: Boolean(twoFactorVerification),
 		user: {
 			avatar: { ...query[0].userAvatar },
@@ -154,8 +163,10 @@ export default function Component({ loaderData }: Route.ComponentProps) {
 					</Link>
 				</div>
 				<div>
-					<Link to="password">
-						<Icon name="dots-horizontal">Change Password</Icon>
+					<Link to={loaderData.hasPassword ? 'password' : 'password/create'}>
+						<Icon name="dots-horizontal">
+							{loaderData.hasPassword ? 'Change Password' : 'Create a Password'}
+						</Icon>
 					</Link>
 				</div>
 				<div>

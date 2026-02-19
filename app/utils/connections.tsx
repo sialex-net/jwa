@@ -19,10 +19,12 @@ const providerIcons: Record<ProviderName, React.ReactNode> = {
 } as const;
 
 export function ProviderConnectionForm({
+	redirectTo,
 	type,
 	providerName,
 }: {
 	providerName: ProviderName;
+	redirectTo?: null | string;
 	type: 'Connect' | 'Login' | 'Signup';
 }) {
 	let label = providerLabels[providerName];
@@ -33,6 +35,13 @@ export function ProviderConnectionForm({
 			className="flex items-center justify-center gap-2"
 			method="POST"
 		>
+			{redirectTo ? (
+				<input
+					name="redirectTo"
+					type="hidden"
+					value={redirectTo}
+				/>
+			) : null}
 			<Button
 				className="w-full"
 				type="submit"

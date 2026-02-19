@@ -3,7 +3,7 @@ import * as ReactEmail from '@react-email/components';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import type { MetaFunction } from 'react-router';
-import { data, Form, Link, redirect } from 'react-router';
+import { data, Form, Link, redirect, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { ErrorList } from '@/app/components/forms';
 import { Spacer } from '@/app/components/spacer';
@@ -145,7 +145,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Component({ actionData }: Route.ComponentProps) {
-	let { form, fields } = useForm(SignupFormSchema, {
+	let [searchParams] = useSearchParams();
+	let redirectTo = searchParams.get('redirectTo');
+
+	let { fields, form } = useForm(SignupFormSchema, {
 		id: 'signup-form',
 		lastResult: actionData?.result,
 	});
@@ -241,6 +244,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 			<div className="mt-5 flex flex-col gap-5 border-border border-t-2 border-b-2 py-3">
 				<ProviderConnectionForm
 					providerName="github"
+					redirectTo={redirectTo}
 					type="Signup"
 				/>
 			</div>

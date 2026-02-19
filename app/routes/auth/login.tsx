@@ -223,6 +223,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 			<div className="mt-5 flex flex-col gap-5 border-border border-t-2 border-b-2 py-3">
 				<ProviderConnectionForm
 					providerName="github"
+					redirectTo={redirectTo}
 					type="Login"
 				/>
 			</div>

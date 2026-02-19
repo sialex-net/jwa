@@ -1,7 +1,11 @@
+import { getDomainUrl } from './get-domain-url';
+
 /**
  * Combine multiple header objects into one (uses append so headers are not overridden)
  */
-function combineHeaders(...headers: Array<null | ResponseInit['headers']>) {
+export function combineHeaders(
+	...headers: Array<null | ResponseInit['headers']>
+) {
 	let combined = new Headers();
 	for (let header of headers) {
 		if (!header) continue;
@@ -26,4 +30,17 @@ export function combineResponseInits(
 		};
 	}
 	return combined;
+}
+
+export function getReferrerRoute(request: Request) {
+	let referrer =
+		request.headers.get('referer') ??
+		request.headers.get('referrer') ??
+		request.referrer;
+	let domain = getDomainUrl(request);
+	if (referrer?.startsWith(domain)) {
+		return referrer.slice(domain.length);
+	} else {
+		return '/';
+	}
 }

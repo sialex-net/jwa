@@ -275,7 +275,7 @@ export async function logout(
 	if (sessionId) {
 		let client = connectClientCf();
 		let db = drizzle(client, { logger: false, schema });
-		void db
+		await db
 			.delete(schema.sessions)
 			.where(eq(schema.sessions.id, sessionId))
 			.catch(() => {})

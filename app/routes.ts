@@ -33,6 +33,7 @@ export default [
 	route('settings', './routes/settings/settings.tsx', [
 		index('./routes/settings/home.tsx'),
 		route('password', './routes/settings/password.tsx'),
+		route('password/create', './routes/settings/create-password.tsx'),
 		route('avatar', './routes/settings/avatar.tsx'),
 		route('change-email', './routes/settings/change-email.tsx'),
 		route('connections', './routes/settings/connections.tsx'),

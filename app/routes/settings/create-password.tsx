@@ -10,36 +10,31 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { appContext, getContext } from '@/app/context';
 import { connectClientCf } from '@/app/middleware/libsql';
-import {
-	getPasswordHash,
-	requireUserId,
-	verifyUserPassword,
-} from '@/app/utils/auth.server';
+import { getPasswordHash, requireUserId } from '@/app/utils/auth.server';
 import { PasswordSchema } from '@/app/utils/user-validation';
 import * as schema from '@/data/drizzle/schema';
-import type { Route } from './+types/password';
+import type { Route } from './+types/create-password';
 
 export const handle = {
 	breadcrumb: <Icon name="dots-horizontal">Password</Icon>,
 };
 
-const ChangePasswordFormSchema = z
+const CreatePasswordFormSchema = z
 	.object({
 		confirmNewPassword: PasswordSchema,
-		currentPassword: PasswordSchema,
 		newPassword: PasswordSchema,
 	})
 	.superRefine(({ confirmNewPassword, newPassword }, ctx) => {
 		if (confirmNewPassword !== newPassword) {
 			ctx.addIssue({
 				code: 'custom',
-				message: 'Passwords must match',
+				message: 'The passwords must match',
 				path: ['confirmNewPassword'],
 			});
 		}
 	});
 
-async function requirePassword(userId: string) {
+async function requireNoPassword(userId: string) {
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
 	let password = await db
@@ -47,40 +42,28 @@ async function requirePassword(userId: string) {
 		.from(schema.passwords)
 		.where(eq(schema.passwords.userId, userId))
 		.get();
-	if (!password) {
-		throw redirect('/settings/password/create');
+
+	if (password) {
+		throw redirect('/settings/password');
 	}
 }
 
 export async function loader({ context, request }: Route.LoaderArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
-	await requirePassword(userId);
+	await requireNoPassword(userId);
 	return {};
 }
 
 export async function action({ context, request }: Route.ActionArgs) {
 	let { env } = getContext(context, appContext);
 	let userId = await requireUserId(env, request);
+	await requireNoPassword(userId);
 	let formData = await request.formData();
 	let submission = parseSubmission(formData);
-
-	let superRefined = ChangePasswordFormSchema.superRefine(
-		async ({ currentPassword, newPassword }, ctx) => {
-			if (currentPassword && newPassword) {
-				let user = await verifyUserPassword({ id: userId }, currentPassword);
-				if (!user) {
-					ctx.addIssue({
-						code: 'custom',
-						message: 'Incorrect password',
-						path: ['currentPassword'],
-					});
-				}
-			}
-		},
+	let result = await CreatePasswordFormSchema.safeParseAsync(
+		submission.payload,
 	);
-
-	let result = await superRefined.safeParseAsync(submission.payload);
 
 	if (!result.success) {
 		return data(
@@ -89,7 +72,7 @@ export async function action({ context, request }: Route.ActionArgs) {
 					error: {
 						issues: result.error.issues,
 					},
-					hideFields: ['currentPassword', 'newPassword', 'password'],
+					hideFields: ['newPassword', 'confirmNewPassword'],
 				}),
 			},
 			{ status: 400 },
@@ -97,52 +80,29 @@ export async function action({ context, request }: Route.ActionArgs) {
 	}
 
 	let { newPassword } = result.data;
-
 	let client = connectClientCf();
 	let db = drizzle(client, { logger: false, schema });
-
 	await db
-		.update(schema.passwords)
-		.set({ hash: await getPasswordHash(newPassword) })
-		.where(eq(schema.passwords.userId, userId));
+		.insert(schema.passwords)
+		.values({ hash: await getPasswordHash(newPassword), userId });
 
-	return redirect(`/settings`);
+	return redirect('/settings');
 }
 
 export default function Component({ actionData }: Route.ComponentProps) {
-	let { form, fields } = useForm(ChangePasswordFormSchema, {
+	let { fields, form } = useForm(CreatePasswordFormSchema, {
 		id: 'signup-form',
 		lastResult: actionData?.result,
 	});
-
 	return (
 		<Form
-			className="container mx-auto flex max-w-xl flex-col gap-y-2 pt-8"
+			className="mx-auto max-w-md"
 			method="POST"
 			{...form.props}
 		>
 			<div className="relative">
 				<Input
-					autoComplete="current-password"
-					className="peer pt-7 leading-5"
-					defaultValue={fields.currentPassword.defaultValue}
-					id={fields.currentPassword.id}
-					name={fields.currentPassword.name}
-					type="password"
-				/>
-				<Label
-					className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
-					htmlFor={fields.currentPassword.id}
-				>
-					Current Password
-				</Label>
-				<div className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs">
-					{fields.currentPassword.errors}
-				</div>
-			</div>
-			<div className="relative">
-				<Input
-					autoComplete="new-password"
+					autoComplete="password"
 					className="peer pt-7 leading-5"
 					defaultValue={fields.newPassword.defaultValue}
 					id={fields.newPassword.id}
@@ -153,7 +113,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
 					htmlFor={fields.newPassword.id}
 				>
-					New Password
+					Password
 				</Label>
 				<div className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs">
 					{fields.newPassword.errors}
@@ -161,7 +121,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 			</div>
 			<div className="relative">
 				<Input
-					autoComplete="new-password"
+					autoComplete="password"
 					className="peer pt-7 leading-5"
 					defaultValue={fields.confirmNewPassword.defaultValue}
 					id={fields.confirmNewPassword.id}
@@ -172,18 +132,11 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					className="absolute top-2 left-4 font-light text-gray-4 text-xs peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-lg peer-hover:text-gray-7 peer-focus-visible:pb-7.5 peer-focus-visible:text-foreground peer-focus-visible:text-xs peer-focus-visible:hover:text-foreground"
 					htmlFor={fields.confirmNewPassword.id}
 				>
-					Confirm New Password
+					Confirm Password
 				</Label>
-				{/* TODO: make component */}
-				{fields.confirmNewPassword.errors ? (
-					<div className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs">
-						<ul className="flex gap-x-2">
-							{fields.confirmNewPassword.errors.map((e) => (
-								<li key={e}>{e}</li>
-							))}
-						</ul>
-					</div>
-				) : null}
+				<div className="absolute right-4 bottom-1 font-light text-destructive-5 text-xs">
+					{fields.confirmNewPassword.errors}
+				</div>
 			</div>
 			<ErrorList
 				errors={form.errors}
@@ -201,7 +154,7 @@ export default function Component({ actionData }: Route.ComponentProps) {
 					)}
 					variant="secondary"
 				/>
-				<Button type="submit">Change Password</Button>
+				<Button type="submit">Create Password</Button>
 			</div>
 		</Form>
 	);
