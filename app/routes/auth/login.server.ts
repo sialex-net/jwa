@@ -5,6 +5,7 @@ import { redirect } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { connectClientCf } from '@/app/middleware/libsql';
 import { sessionKey } from '@/app/utils/auth.server';
+import { combineResponseInits } from '@/app/utils/http';
 import { getSessionStorage } from '@/app/utils/sessions.server';
 import { getVerifySessionStorage } from '@/app/utils/verification.server';
 import * as schema from '@/data/drizzle/schema';
@@ -26,6 +27,7 @@ export async function handleNewSession(
 		request: Request;
 		session: { expirationDate: Date; id: string; userId: string };
 	},
+	responseInit?: ResponseInit,
 ) {
 	if (await shouldRequestTwoFA(env, { request, userId: session.userId })) {
 		let verifySession = await getVerifySessionStorage(env).getSession();
@@ -36,28 +38,40 @@ export async function handleNewSession(
 			target: session.userId,
 			type: twoFAVerificationType,
 		});
-		return redirect(redirectUrl.toString(), {
-			headers: {
-				'set-cookie':
-					await getVerifySessionStorage(env).commitSession(verifySession),
-			},
-		});
+		return redirect(
+			redirectUrl.toString(),
+			combineResponseInits(
+				{
+					headers: {
+						'set-cookie':
+							await getVerifySessionStorage(env).commitSession(verifySession),
+					},
+				},
+				responseInit,
+			),
+		);
 	} else {
 		let cookieSession = await getSessionStorage(env).getSession(
 			request.headers.get('cookie'),
 		);
 		cookieSession.set(sessionKey, session.id);
 
-		return redirect(safeRedirect(redirectTo), {
-			headers: {
-				'set-cookie': await getSessionStorage(env).commitSession(
-					cookieSession,
-					{
-						expires: remember ? session.expirationDate : undefined,
+		return redirect(
+			safeRedirect(redirectTo),
+			combineResponseInits(
+				{
+					headers: {
+						'set-cookie': await getSessionStorage(env).commitSession(
+							cookieSession,
+							{
+								expires: remember ? session.expirationDate : undefined,
+							},
+						),
 					},
-				),
-			},
-		});
+				},
+				responseInit,
+			),
+		);
 	}
 }
 
